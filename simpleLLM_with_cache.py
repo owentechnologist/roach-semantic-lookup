@@ -37,6 +37,8 @@ import time,uuid
 from cmdline_utils import *
 from prompt_templates import *
 
+# edit (increase) this value to cause queries to fail (as of now all rows have a star_rating of 3):
+star_rating_target = 3 #default value 
 
 ### LLM / AI Setup ###
 # Q: where is the LLM library? A: we are using a hosted 'localAI' server
@@ -164,7 +166,6 @@ while True:
         start_time=time.perf_counter()
         # now we can search for semantically similar prompt(s)
         # this function expects a user-created star_rating from 1 to 5 (5 star is best)
-        star_rating_target = 3 #default value 
         #print('before DB vector query...')
         results = query_using_vector_similarity(prompt_embedding,star_rating_target)
         #print(f'after DB vector query...  results type == {type(results)}')
