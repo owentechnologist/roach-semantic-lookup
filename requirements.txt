@@ -1,0 +1,5 @@
+psycopg[binary]>=3.0
+requests
+sentence-transformers
+jsonpath-ng
+numpy<2

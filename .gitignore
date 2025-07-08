@@ -1,0 +1,3 @@
+roachsc/**
+.env
+__pycache__/
