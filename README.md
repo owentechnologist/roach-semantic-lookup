@@ -12,9 +12,8 @@ C: (LLMResponse as Text is returned to user)
 ```
 ![Direct Call to LLM](./llm_direct.png)
 
-Semantic caching workflow :
+Semantic caching workflow Successful match:
 
-![Query DB for similar query and existing response](./semantic_cache_hit.png)
 ```
 start workflow
 A: (UserPrompt as text is generated/accepted by system) 
@@ -22,16 +21,27 @@ B: (UserPrompt as embedding is generated)
 C: CRDB Vector Similarity Query issued to check for existing responses to same semantic prompt 
 If 
    Match to an existing stored UserPrompt Embedding exists : 
-   D1: Fetch Associated Stored LLM Text response and return to user
+   D: Fetch Associated Stored LLM Text response and return to user
 end workflow
+```
+![Query DB for similar query and existing response](./semantic_cache_hit.png)
 
-else if 
+
+Semantic caching workflow No match:
+
+```
+start workflow
+A: (UserPrompt as text is generated/accepted by system) 
+B: (UserPrompt as embedding is generated) 
+C: CRDB Vector Similarity Query issued to check for existing responses to same semantic prompt 
+If 
     No Match to an existing stored UserPrompt Embedding exists : 
-    D2: Call LLM API with UserPrompt as text 
+    D: Call LLM API with UserPrompt as text 
     E:  Store UserPrompt Embedding along with userPrompt as text and LLMResponse as Text in CRDB
     F:  Return LLM Text response to user
 end workflow
 ```
+
 ![Query DB fail](./semantic_cache_miss.png)
 
 ## This example Uses https://localai.io/ and CockroachDB to demonstrate basic Semantic Caching of responses to user prompts made to an LLM.
