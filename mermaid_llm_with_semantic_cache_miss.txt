@@ -1,0 +1,8 @@
+sequenceDiagram
+    User->>+App: [Query] What is the average weight of a plum?
+    App->>+DB: Vector Search for similar: [Query]
+    DB-->>-App: nothing matches
+    App->>+LLM: [Query] What is the average weight of a plum?
+    LLM-->>-App: [text response]
+    App->>+DB: Store [text response] and vector embedding of [Query] ]
+    App-->>-User: [text response]

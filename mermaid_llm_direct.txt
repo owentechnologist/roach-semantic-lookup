@@ -1,0 +1,5 @@
+sequenceDiagram
+    User->>+App: What is the average weight of a plum?
+    App->>+LLM: What is the average weight of a plum?
+    LLM-->>-App: [text response]
+    App-->>-User: [text response]

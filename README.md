@@ -10,9 +10,11 @@ A: (UserPrompt as text is generated/accepted by system)
 B: Call LLM API with UserPrompt as text
 C: (LLMResponse as Text is returned to user)
 ```
+![Direct Call to LLM](./llm_direct.png)
 
 Semantic caching workflow :
 
+![Query DB for similar query and existing response](./semantic_cache_hit.png)
 ```
 start workflow
 A: (UserPrompt as text is generated/accepted by system) 
@@ -30,6 +32,7 @@ else if
     F:  Return LLM Text response to user
 end workflow
 ```
+![Query DB fail](./semantic_cache_miss.png)
 
 ## This example Uses https://localai.io/ and CockroachDB to demonstrate basic Semantic Caching of responses to user prompts made to an LLM.
 
