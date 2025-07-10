@@ -97,8 +97,7 @@ cockroach sql --insecure -f crdb_setup.sql
 ```
 -- some useful calculations: (the larger the number the greater the distance between the vectors)
 -- <= 0.33 filters is roughly ~75%+ similarity or better
--- <= 1 filters to ~50%+ similarity or better
--- <= 4 corresponds to ~20% match or higher
+-- <= .5 filters to ~50%+ similarity or better
 -- filter on percentage match option: 
 -- cosine_distance(vec1,vec2)
 ```
@@ -118,10 +117,13 @@ WITH target_vector AS (
     ) AS "Percent Match"
     FROM llm_history, target_vector
     WHERE star_rating >= %s
-    AND cosine_distance(prompt_embedding, ipv) <= 1
+    AND ROUND(
+        GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
+        2
+    ) > 82
     ORDER BY "Percent Match" DESC
     LIMIT 2;
-    ```
+```
 
 If you wish to execute other sql -- The following command connects using the provided SQL CLI:
 
@@ -149,14 +151,17 @@ On windows you would do:
 ```
 roachsc\Scripts\activate
 ```
+
 If no permission in Windows
  The Fix (Temporary, Safe, Local):
 In PowerShell as Administrator, run:
-```
 
+```
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 ```
+
 Then confirm with Y when prompted.
+
 
 3. Python will utilize this requirements.txt in the project:
 
@@ -172,7 +177,9 @@ pip3 install -r requirements.txt
 ```
 
 5. SEVERAL THINGS ARE HARD CODED IN THIS EXAMPLE! (localhost for both crdb and localAI)
-Edit your local copy of the code as you like and run the program.  Fix it as necessary to get the behavior you want ( see below for possible prompt engineering options )
+Edit your local copy of the code as you prefer, and run the program.  Fix it as necessary to get the behavior you want ( see below for possible prompt engineering options )
+
+To use the default star_rating filter of 3 or better stars just call the program:
 
 ```
 python3 simpleLLM_with_cache.py 
@@ -180,10 +187,23 @@ python3 simpleLLM_with_cache.py
 
 * The example will call an LLM and display the response, as well as display the prompt sent to the LLM 
 
-* To enable semantic caching the prompt needs to be stored in CRDB in its embedded form so that Vector Search can find it - to enable that behavior uncomment line FIXME
+* The program will use semantic caching and the incoming prompts will be stored in CRDB in their embedded form so that Vector Search can find them - Note however that all queries filter according to the star_rating of the responses
 
-* Prompt engineering options: (note if you fetch a CRDB stored result, the LLM never gets called and the prompt engineering has no effect)
-You may wish to force-fail the matching query by demanding a higher star_rating (around line 41)
+* NB: If a stored response to a query does not have a star_rating high enough to pass the star_rating filter, a new prompt and response will be stored alongside the old one (currently, all responses are given a star_rating of 3)
+
+* Prompt engineering options: (note if you fetch a CRDB stored result, the LLM never gets called, and the prompt engineering has no effect)
+You may wish to force-fail the matching query by demanding a higher star_rating.  
+You can do this by calling the program with a higher number than is possible (the table has a constraint allowing only values between 1 and 5): 
+
+```
+python3 simpleLLM_with_cache.py 6 
+```
+
+* If you wish to disable the writing of new prompts and responses to the database you can add one more argument when starting up the program:
+
+```
+python3 simpleLLM_with_cache.py 6 nostore
+```
 
 ## At Around line 115 in the file: simpleLLM_with_cache.py 
 ## You can try your hand at prompt engineering by playing with the alternate templates provided in the file: prompt_templates.py: ( the user input can be couched in such a template to modify the output of the LLM )
