@@ -33,9 +33,11 @@ from sentence_transformers import SentenceTransformer
 #general imports: 
 import time,uuid
 ### cmdline_utils==General Setup &
+
+# prompt templates for LLM:
+from prompt_templates import *
 # UI and Redis connection functions: ###
 from cmdline_utils import *
-from prompt_templates import *
 
 def get_connection():
         # use unpacking operator ** to turn dict to separate args:
@@ -120,14 +122,12 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
 # the question posed by the user:
 def ask_llm(question):
     # a little prompt engineering is needed to get the answers in a usable format:
-    # HERE IS WHERE you could call a different prompt_template function:
-    template_=template_base(question) 
-    #template_=template_cockroach(question)
-    #template_=template_music(question)
-    #template_=template_gang(question)
-    #template_=template_poet(question)
+    # HERE IS WHERE your specification of a different prompt_template function as the third argument to this program takes effect:
+    # example program startup where the template matching 'gang' is used:  (see code in prompt_templates.py)
+    # python3 simpleLLM_with_cache.py 6 nostore gang
+    template_=template_func(question) 
 
-    llm_request_data = {"model": "tinyswallow-1.5b-instruct","response_format": {"type": "json"}, "messages": [{"role": "user", "content": f"{template_}"}], "temperature": 0.45}
+    llm_request_data = {"model": "tinyswallow-1.5b-instruct","response_format": {"type": "json"}, "messages": [{"role": "user", "content": f"{template_}"}], "temperature": temperature}
     print(f"DEBUG: we are sending this to the LLM:\n {llm_request_data}")
     headers =  {"Content-Type": "application/json"}    
     myResponse = requests.post(llm_chat_url,json=llm_request_data,headers=headers )
@@ -173,13 +173,14 @@ def main_routine():
             llm_response = ""
             if 'null'==pk:
                 print('No suitable prior response has been found.')
-            if nostore==False and 'null'==pk:
+                #print(f'DEBUG: VALUES CHECK: nostore=={nostore} pk=={pk}')
                 print('\n Generating new Response...\n')
                 # create a new LLM-generated result as the answer:            
                 llm_response = ask_llm(user_input) 
-                #print('before DB insert...')
-                insert_llm_prompt_response(prompt_embedding,user_input,llm_response)
-                #print('after DB insert...')
+                if nostore==False:
+                    #print('before DB insert...')
+                    insert_llm_prompt_response(prompt_embedding,user_input,llm_response)
+                    #print('after DB insert...')
             # output whatever the result is to the User Interface:
             print(f'{spacer}\n{llm_response}{spacer}\n')
             uparrows = " ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ \n"

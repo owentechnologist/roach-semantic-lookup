@@ -97,9 +97,6 @@ cockroach sql --insecure -f crdb_setup.sql
 
 ## thoughts on calculating vector distances in CRDB: For Semantic Search against text embeddings we use the function: cosine_distance(vec1,vec2)
 ```
--- some useful calculations: (the larger the number the greater the distance between the vectors)
--- <= 0.33 filters is roughly ~75%+ similarity or better
--- <= .5 filters to ~50%+ similarity or better
 -- filter on percentage match option: 
 -- cosine_distance(vec1,vec2)
 ```
@@ -178,8 +175,10 @@ etc ...
 pip3 install -r requirements.txt
 ```
 
-5. SEVERAL THINGS ARE HARD CODED IN THIS EXAMPLE! (localhost for both crdb and localAI)
-Edit your local copy of the code as you prefer, and run the program.  Fix it as necessary to get the behavior you want ( see below for possible prompt engineering options )
+5. SEVERAL THINGS ARE HARD CODED IN THIS EXAMPLE! (for example the use of localhost for both crdb and localAI connections)
+
+Edit your local copy of the code in cmdline_utils.py as you prefer/need for the connection settings.  
+
 
 To use the default star_rating filter of 3 or better stars just call the program:
 
@@ -207,14 +206,28 @@ python3 simpleLLM_with_cache.py 6
 python3 simpleLLM_with_cache.py 6 nostore
 ```
 
-## At Around line 115 in the file: simpleLLM_with_cache.py 
-## You can try your hand at prompt engineering by playing with the alternate templates provided in the file: prompt_templates.py: ( the user input can be couched in such a template to modify the output of the LLM )
-comment/uncomment the code to test different prompts:
+## prompt engineering and context management:
+
+You may also adjust the prompts used in simpleLLM_with_cache.py and prompt_templates.py to get the behavior you want from the LLM 
+
+The existing logic insists on the ordering of args to the program and when you specify a prompt to modify the flavour of the LLM response, that response will not be persisted to the database.  (fork the project and have at it if you wish other behavior) 
+
+Start the program adding as an argument the keyname of the prompt template you wish to send to the LLM with each request like so:
+
 ```
-    template_=template_base(question) 
-    #template_=template_music(question)
-    #template_=template_gang(question)
-    #template_=template_poet(question)
+python3 simpleLLM_with_cache.py 6 nostore gang
+```
+
+## You can try your hand at prompt engineering by playing with the alternate templates provided in the file: prompt_templates.py: ( the user input can be couched in such a template to modify the output of the LLM )
+Look at the code in prompt_templates.py:
+```
+TEMPLATE_MAP = {
+    "base": template_base,
+    "cockroach": template_cockroach,
+    "music": template_music,
+    "gang": template_gang,
+    "poet": template_poet
+}
 ```
 
 6. When you are done using this environment you can deactivate it:

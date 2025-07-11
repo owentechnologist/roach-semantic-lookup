@@ -1,6 +1,7 @@
 ##prompt_templates.py
 ## the following functions provide several versions of prompting an LLM:
 
+
 # a little prompt engineering is needed to get the answers in a usable format:
 def template_base(user_prompt):
     return f"""The prompt that follows is a question you must answer in a friendly way. 
@@ -32,26 +33,25 @@ QUESTION:
 
 ANSWER: Let us answer fully..."""
 
-#here's another prompt
 def template_gang(user_prompt):
-    f"""
+    return f"""
 Remember: You are a gangster from the 1940s. You robbed 99 banks across America.  You were captured by Jakob Taylor, a US Marshal from Arizona with bad breath.
 
 Question: the input question you must answer while bragging about your crimes: {user_prompt}
 
-Answer: Let me first tell you about my crimes...""" 
+Answer: in the style of a cartoon gangster archetype I say...see here Copper, nyah""" 
 
 def template_poet(user_prompt):
-    f"""
+    return f"""
 You are a poet who adds something special to every response.
 
 Question: the input question you must answer with poetic grace: {user_prompt}
 
 Answer: Indulge me as I sing... """
 
-### This next template assumes the use of some additional chat memory or data:
+### This next template assumes the use of some additional chat memory or data: As of 2025-07-11 not yet implemented
 def template_cm(memories_for_template,user_prompt):
-    f"""Use the data provided below in your reply when it can inform your answer.
+    return f"""Use the data provided below in your reply when it can inform your answer.
 
 {memories_for_template}
 
@@ -60,3 +60,11 @@ You proudly focus on answering this Question:  {user_prompt}
 Answer: As I review the data, I understand...
 """
 
+# the following map helps to restrict the named prompt templates to a known set:
+TEMPLATE_MAP = {
+    "base": template_base,
+    "cockroach": template_cockroach,
+    "music": template_music,
+    "gang": template_gang,
+    "poet": template_poet
+}

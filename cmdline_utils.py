@@ -2,6 +2,8 @@
 # cmdline UI code
 
 import sys,getopt
+# prompt templates for LLM:
+from prompt_templates import *
 
 
 ### LLM / AI Setup ###
@@ -26,16 +28,37 @@ db_config = {
 # the default rating for cached responses is 3
 # pass in a larger value to cause queries to fail (as of now all rows have a star_rating of 3):
 star_rating_target = 3
-if len(sys.argv) > 2:
-    star_rating_target=int(sys.argv[2])
+
+# this value determines which prompt tenplate to send to the LLM - it can be overriden at runtime by the user as sys.argv[3]
+prompt_template="base"
+
+# this value determines the temperature used by the LLM - a larger value give the model more freedom to be creative
+temperature = .45
+
+#print(f' sys.argv length == {len(sys.argv)}')
+
+if len(sys.argv) > 1:
+    star_rating_target=int(sys.argv[1])
     print(f'You have set the star_rating filter to {star_rating_target}, lower-rated responses will be ignored')
 
 # this flag determines if the program writes new embeddings and text responses to the database or skips that functionality
 # you would set this to true in order to test interactions with the LLM and avoid poluting your database with nonsense 
 nostore = False
-if len(sys.argv) > 3:
+if len(sys.argv) > 2:
     nostore=True
     print(f'You have set the nostore to {nostore}, if True, no new data will be stored in the database')
+
+# this argument specifies the name of a prompt to use when invoking the LLM 
+# example template_gang
+if len(sys.argv) > 3:
+    prompt_template=sys.argv[3].strip()
+    template_func=TEMPLATE_MAP.get(prompt_template,template_base)
+    print(f'You have set the prompt template to {template_func.__name__} the responses from the LLM will be impacted accordingly')
+    sample_prompt = template_func("test")
+    print(f'Here is the prompt to be used: \n{sample_prompt}')
+    if prompt_template=='gang':
+        temperature=1.5
+
 
 # bootstrap value, as we later check for the existence of user_input
 user_input = "BEGIN"
