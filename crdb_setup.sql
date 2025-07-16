@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS vdb.llm_history(
    prompt_text string,
    llm_response string,
    star_rating smallint NOT NULL DEFAULT 3 CHECK (star_rating BETWEEN 1 AND 5),
-   VECTOR INDEX (prompt_embedding)
+   VECTOR INDEX (star_rating,prompt_embedding)
 );
 
 -- just a simple check for any rows 

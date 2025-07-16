@@ -15,11 +15,12 @@ A running instance of CockroachDB version 25.2 or higher
 # this version of the program hard-codes the following 2 connection configurations
 # 1. the url to connect to localhost insecure crdb: postgresql://root@localhost:26257/vdb?sslmode=disable
 # 2. the url to connect to localhost localAI http://localhost:6060/v1/chat/completions
-# sample execution of this python program: 
+# sample executions of this python program: 
 """ 
 python simpleLLM_with_cache.py 
-python simpleLLM_with_cache.py  
-
+python simpleLLM_with_cache.py <star_rating_filter> 
+python simpleLLM_with_cache.py 4 nostore
+python simpleLLM_with_cache.py 4 nostore poetry
 """
 
 # import driver for CRDB:

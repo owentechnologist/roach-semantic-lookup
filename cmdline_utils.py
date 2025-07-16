@@ -30,7 +30,7 @@ db_config = {
 star_rating_target = 3
 
 # this value determines which prompt tenplate to send to the LLM - it can be overriden at runtime by the user as sys.argv[3]
-prompt_template="base"
+template_func=TEMPLATE_MAP.get("base")
 
 # this value determines the temperature used by the LLM - a larger value give the model more freedom to be creative
 temperature = .45
@@ -56,6 +56,7 @@ if len(sys.argv) > 3:
     print(f'You have set the prompt template to {template_func.__name__} the responses from the LLM will be impacted accordingly')
     sample_prompt = template_func("test")
     print(f'Here is the prompt to be used: \n{sample_prompt}')
+    # if the LLM is supposed to represent a gangster, the temperature needs to be increased to allow creativity:
     if prompt_template=='gang':
         temperature=1.5
 

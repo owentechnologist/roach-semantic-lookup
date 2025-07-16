@@ -130,6 +130,12 @@ If you wish to execute other sql -- The following command connects using the pro
 cockroach sql --insecure
 ```
 
+A sample query you may want to try after some prompts and responses have been collected.
+
+```
+select prompt_text,star_rating from llm_history order by star_rating asc;
+```
+
 ## Python-preparation Steps for running the samples on your dev machine:
 
 
@@ -190,7 +196,7 @@ python3 simpleLLM_with_cache.py
 
 * The program will use semantic caching and the incoming prompts will be stored in CRDB in their embedded form so that Vector Search can find them - Note however that all queries filter according to the star_rating of the responses
 
-* NB: If a stored response to a query does not have a star_rating high enough to pass the star_rating filter, a new prompt and response will be stored alongside the old one (currently, all responses are given a star_rating of 3)
+* NB: If a stored response to a query does not have a star_rating high enough to pass the star_rating filter, a new prompt and response will be stored alongside the old one (currently, all responses are given a star_rating of 3 as a default when they are initially stored)
 
 * Prompt engineering options: (note if you fetch a CRDB stored result, the LLM never gets called, and the prompt engineering has no effect)
 You may wish to force-fail the matching query by demanding a higher star_rating.  
@@ -208,14 +214,14 @@ python3 simpleLLM_with_cache.py 6 nostore
 
 ## prompt engineering and context management:
 
-You may also adjust the prompts used in simpleLLM_with_cache.py and prompt_templates.py to get the behavior you want from the LLM 
+You may also adjust the prompts used in simpleLLM_with_cache.py and prompt_templates.py to adjust the behavior of the LLM 
 
 The existing logic insists on the ordering of args to the program and when you specify a prompt to modify the flavour of the LLM response, that response will not be persisted to the database.  (fork the project and have at it if you wish other behavior) 
 
-Start the program adding as an argument the keyname of the prompt template you wish to send to the LLM with each request like so:
+If you wish to specify a non-default prompt to the LLM, start the program adding as an argument the keyname of the prompt template you wish to send to the LLM with each request like so:
 
 ```
-python3 simpleLLM_with_cache.py 6 nostore gang
+python3 simpleLLM_with_cache.py 6 nostore poetry
 ```
 
 ## You can try your hand at prompt engineering by playing with the alternate templates provided in the file: prompt_templates.py: ( the user input can be couched in such a template to modify the output of the LLM )
