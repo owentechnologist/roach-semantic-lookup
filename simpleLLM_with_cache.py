@@ -15,6 +15,7 @@ A running instance of CockroachDB version 25.2 or higher
 # this version of the program hard-codes the following 2 connection configurations
 # 1. the url to connect to localhost insecure crdb: postgresql://root@localhost:26257/vdb?sslmode=disable
 # 2. the url to connect to localhost localAI http://localhost:6060/v1/chat/completions
+# Edit cmdline_utils.py to adjust these hard coded connection details
 # sample executions of this python program: 
 """ 
 python simpleLLM_with_cache.py 
@@ -164,12 +165,15 @@ def main_routine():
         if user_input:
             # we are interested in seeing how long it takes to query using Vector indexes: 
             start_time=time.perf_counter()
+            star_interrupt_time=0
             # now we can search for semantically similar prompt(s)
             # this function expects a user-created star_rating from 1 to 5 (5 star is best)
             #print('before DB vector query...')
             pk = query_using_vector_similarity(prompt_embedding,star_rating_target)
             if not 'null' == pk:
+                star_interrupt_time=time.perf_counter()
                 check_star_rating(pk)
+                star_interrupt_time=time.perf_counter()-star_interrupt_time
             #print(f'after DB vector query...  results type == {type(results)}')
             llm_response = ""
             if 'null'==pk:
@@ -185,7 +189,8 @@ def main_routine():
             # output whatever the result is to the User Interface:
             print(f'{spacer}\n{llm_response}{spacer}\n')
             uparrows = " ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ \n"
-            print(f'\t{uparrows}\tElapsed Time to respond to user prompt was: {(time.perf_counter()-start_time)*1} seconds\n')
+            duration=(time.perf_counter()-(start_time+star_interrupt_time))*1
+            print(f'\t{uparrows}\tElapsed Time to respond to user prompt was: {duration} seconds\n')
 
 # --- Example usage ---
 if __name__ == "__main__":
