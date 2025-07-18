@@ -1,5 +1,5 @@
 # This is a collection of 
-# cmdline UI code
+# cmdline UI (and other) code
 
 import sys,getopt
 # prompt templates for LLM:
