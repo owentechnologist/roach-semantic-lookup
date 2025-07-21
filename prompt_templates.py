@@ -63,11 +63,20 @@ You proudly focus on answering this Question:  {user_prompt}
 Answer: As I review the data, I understand...
 """
 
+def template_sql_tool(user_prompt):
+    return f"""You respond with only the SQL query necessary to complete a task.
+
+You focus exclusively on answering this Question using SQL:  {user_prompt}
+
+Response: I will execute the following SQL...
+"""
+
 # the following map helps to restrict the named prompt templates to a known set:
 TEMPLATE_MAP = {
     "base": template_base,
     "cockroach": template_cockroach,
     "music": template_music,
     "gang": template_gang,
-    "poet": template_poet
+    "poet": template_poet,
+    "sql": template_sql_tool
 }

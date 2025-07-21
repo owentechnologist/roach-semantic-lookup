@@ -98,7 +98,7 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
     AND ROUND(
         GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
         2
-    ) > 82
+    ) > 80
     ORDER BY "Percent Match" DESC
     LIMIT 2;'''
     args = (star_rating_filter,)

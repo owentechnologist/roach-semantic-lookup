@@ -224,6 +224,20 @@ If you wish to specify a non-default prompt to the LLM, start the program adding
 python3 simpleLLM_with_cache.py 6 nostore poetry
 ```
 
+# here is a good examople of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
+
+First - start the program using the sql prompt template:
+
+```
+python3 simpleLLM_with_cache.py 6 nostore sql
+```
+
+Next - ask the program the following:
+
+```
+Given the following PreparedStatement populate it with values from the quoted text: SELECT NAME, AGE FROM ZOO WHERE LOCALE = %S AND SPECIES = %s;   "Which gorilla came from India?"
+```
+
 ## You can try your hand at prompt engineering by playing with the alternate templates provided in the file: prompt_templates.py: ( the user input can be couched in such a template to modify the output of the LLM )
 Look at the code in prompt_templates.py:
 ```
@@ -232,7 +246,8 @@ TEMPLATE_MAP = {
     "cockroach": template_cockroach,
     "music": template_music,
     "gang": template_gang,
-    "poet": template_poet
+    "poet": template_poet,
+    "sql": template_sql_tool
 }
 ```
 
