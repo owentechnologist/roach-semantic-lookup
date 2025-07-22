@@ -130,12 +130,27 @@ If you wish to execute other sql -- The following command connects using the pro
 cockroach sql --insecure
 ```
 
+Switch to the database of interest:
+
+```
+use vdb;
+```
+
 A sample query you may want to try after some prompts and responses have been collected.
 
 ```
 select prompt_text,star_rating from llm_history order by star_rating asc;
 ```
 
+Or, perhaps you would like to curate and modify a generated response.
+
+Assuming someone prompted the program with this text: 'what is toothpaste good for?'
+
+We can change the cached response to be more to our liking:
+
+```
+UPDATE llm_history SET llm_response='Toothpaste helps clean teeth and polish silver jewellry.' where prompt_text='what is toothpaste good for?';
+```
 ## Python-preparation Steps for running the samples on your dev machine:
 
 
