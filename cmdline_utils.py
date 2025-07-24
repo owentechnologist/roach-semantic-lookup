@@ -59,13 +59,16 @@ if len(sys.argv) > 3:
     # if the LLM is supposed to represent a gangster, the temperature needs to be increased to allow creativity:
     if prompt_template=='gang':
         temperature=1.5
+    elif prompt_template=='sql':
+        temperature=.15
 
 
 # bootstrap value, as we later check for the existence of user_input
 user_input = "BEGIN"
 
-# This string is used to separate areas of command line output: 
+# These strings are used to separate areas of command line output: 
 spacer = "\n**********************************************"
+uparrows = "\n ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ "
 
 ## this function displays the commandline menu to the user
 ## it offers the ability to end the program by typing 'end'

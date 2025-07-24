@@ -241,17 +241,36 @@ python3 simpleLLM_with_cache.py 6 nostore poetry
 
 # here is a good examople of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
 
+```
++----------+----------+--------+-----+
+| name     | species  | locale | age |
++----------+----------+--------+-----+
+| Gloria   | gorilla  | India  |  31 |
+| Max      | tiger    | Nepal  |   7 |
+| Bubbles  | elephant | Kenya  |  15 |
++----------+----------+--------+-----+
+```
+
+Imagine a table containing all the animals in a zoo with their names, species, original locale, age etc.
+
+Q: How can we dynamically query such a table based on a user's natural language question like this one:
+
+### "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
+
+A: by manipulating the prompt sent to an LLM so that it dynamically generates a SQL query capable of retrieving the answer from a traditional database.
+
 First - start the program using the sql prompt template:
 
 ```
 python3 simpleLLM_with_cache.py 6 nostore sql
 ```
 
-Next - ask the program the following:
+Next - ask the program the following: (this assumes you can look up the PreparedStatement effectively based on the context from the user prompt and the overarching purpose of the bot session in question)
 
 ```
-Given the following PreparedStatement populate it with values from the quoted text: SELECT NAME, AGE FROM ZOO WHERE LOCALE = %S AND SPECIES = %s;   "Which gorilla came from India?"
+Given the following PreparedStatement populate it with values from the quoted text: SELECT NAME, AGE FROM ZOO WHERE LOCALE = %S AND SPECIES = %s;   "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
 ```
+
 
 ## You can try your hand at prompt engineering by playing with the alternate templates provided in the file: prompt_templates.py: ( the user input can be couched in such a template to modify the output of the LLM )
 Look at the code in prompt_templates.py:

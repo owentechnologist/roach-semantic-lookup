@@ -66,9 +66,9 @@ Answer: As I review the data, I understand...
 def template_sql_tool(user_prompt):
     return f"""You respond with only the SQL query necessary to complete a task.
 
-You focus exclusively on answering this Question using SQL:  {user_prompt}
+You focus exclusively on answering this Question using a SQL query and without explanation:  {user_prompt}
 
-Response: I will execute the following SQL...
+Response: [SQL]
 """
 
 # the following map helps to restrict the named prompt templates to a known set:

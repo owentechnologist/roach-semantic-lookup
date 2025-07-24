@@ -66,23 +66,25 @@ def insert_llm_prompt_response(prompt_embedding,prompt_text,llm_response_text):
     if isinstance(prompt_text, list):
         prompt_text = ' '.join(str(x) for x in prompt_text)
     llm_response_text = llm_response_text.strip()
+    new_pk=None
     query = f'''INSERT INTO vdb.llm_history 
         (prompt_embedding, prompt_text, llm_response, star_rating)
-        VALUES ('{prompt_embedding}', %s, %s, 3);'''
+        VALUES ('{prompt_embedding}', %s, %s, 3) returning pk;'''
     args = (prompt_text, llm_response_text)
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(query,args)
+                new_pk = cur.fetchone()[0] 
     except Exception as e:
         print(f"❌ Error during SQL INSERT processing: {e}")
-    return 'insert function returning...'
+    return new_pk
 
 # the query filters results using both the user-assigned star_rating_filter and 
 # the semantic similarity of the prompt to prior stored prompts
 # they must be 50% semantically similar to be returned
 def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
-    return_result = 'null'
+    pk = None
     query=f'''WITH target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv
     )
@@ -108,7 +110,7 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
                 cur.execute(query,args)
                 result = cur.fetchone()
                 if result:
-                    return_result = result[0] #pk
+                    pk = result[0] #pk
                     print("\nFound at least one prior similar prompt:\n")
                     val=result[1] # stored llm_response
                     val = val.strip()
@@ -117,7 +119,7 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
                     print("No matching data.")
     except Exception as e:
         print(f"❌ Error during SQL Vector Similarity processing: {e}")
-    return return_result
+    return pk
 
 ## This function is where we interact with the LLM 
 # - providing a prompt that guides the behavior as well as 
@@ -165,32 +167,32 @@ def main_routine():
         if user_input:
             # we are interested in seeing how long it takes to query using Vector indexes: 
             start_time=time.perf_counter()
-            star_interrupt_time=0
+            llm_interrupt_time=0
             # now we can search for semantically similar prompt(s)
             # this function expects a user-created star_rating from 1 to 5 (5 star is best)
             #print('before DB vector query...')
             pk = query_using_vector_similarity(prompt_embedding,star_rating_target)
-            if not 'null' == pk:
-                star_interrupt_time=time.perf_counter()
-                check_star_rating(pk)
-                star_interrupt_time=time.perf_counter()-star_interrupt_time
             #print(f'after DB vector query...  results type == {type(results)}')
             llm_response = ""
-            if 'null'==pk:
+            if None==pk:
                 print('No suitable prior response has been found.')
                 #print(f'DEBUG: VALUES CHECK: nostore=={nostore} pk=={pk}')
                 print('\n Generating new Response...\n')
                 # create a new LLM-generated result as the answer:            
+                llm_interrupt_time=time.perf_counter()
                 llm_response = ask_llm(user_input) 
+                llm_interrupt_time=time.perf_counter()-llm_interrupt_time
                 if nostore==False:
                     #print('before DB insert...')
-                    insert_llm_prompt_response(prompt_embedding,user_input,llm_response)
+                    pk = insert_llm_prompt_response(prompt_embedding,user_input,llm_response)
                     #print('after DB insert...')
             # output whatever the result is to the User Interface:
             print(f'{spacer}\n{llm_response}{spacer}\n')
-            uparrows = " ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ \n"
-            duration=(time.perf_counter()-(start_time+star_interrupt_time))*1
-            print(f'\t{uparrows}\tElapsed Time to respond to user prompt was: {duration} seconds\n')
+            duration=(time.perf_counter()-(start_time+llm_interrupt_time))*1
+            print(f'\t{uparrows}\tElapsed Time spent querying database was: {duration} seconds\n')
+            print(f'\t{uparrows}\tElapsed Time spent querying LLM was: {llm_interrupt_time} seconds\n')
+            if not None == pk:
+                check_star_rating(pk)
 
 # --- Example usage ---
 if __name__ == "__main__":
