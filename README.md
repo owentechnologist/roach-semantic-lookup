@@ -1,7 +1,7 @@
 ![semantic caching](./semanticcaching.png)
 
-# roach-semantic-lookup
-This example calls an LLM, stores the LLM response as text, along with both a vector embedding of the prompt and the text of the prompt used. The datastore used is CRDB.  The example also showcases searching for a prompt using Vector Search in order to avoid repeated calls to the LLM.  
+# roach-semantic-lookup & prompt customization
+This example calls an LLM, stores the LLM response as text, along with both a vector embedding of the prompt and the text of the prompt used. The datastore used is CRDB.  The example showcases searching for a prompt using Vector Search in order to avoid repeated calls to the LLM.  The example also offers a simple way to adjust the prompt sent to the llm which showcases variety in LLM behavior ranging from a helpful FAQ to a SQL customizer, capable of populating preparedStatements with relevant arguments. 
 
 ## This example showcases a pattern known as semantic caching.
 
@@ -242,13 +242,13 @@ python3 simpleLLM_with_cache.py 6 nostore poetry
 # here is a good examople of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
 
 ```
-+----------+----------+--------+-----+
-| name     | species  | locale | age |
-+----------+----------+--------+-----+
-| Gloria   | gorilla  | India  |  31 |
-| Max      | tiger    | Nepal  |   7 |
-| Bubbles  | elephant | Kenya  |  15 |
-+----------+----------+--------+-----+
++-----+----------+----------+--------+----------+
+ID    | name     | species  | locale |    bd    |
++-----+----------+----------+--------+----------+
+as16e | Gloria   | gorilla  | india  | 19971106 |
+kj87g | Max      | tiger    | nepal  | 20100102 |
+sv278 | Bubbles  | elephant | kenya  | 20180617 |
++-----+----------+----------+--------+----------+ 
 ```
 
 Imagine a table containing all the animals in a zoo with their names, species, original locale, age etc.
@@ -257,7 +257,15 @@ Q: How can we dynamically query such a table based on a user's natural language 
 
 ### "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
 
-A: by manipulating the prompt sent to an LLM so that it dynamically generates a SQL query capable of retrieving the answer from a traditional database.
+You can solve for this by manipulating the prompt sent to an LLM so that it dynamically generates a SQL query capable of retrieving the answer from a traditional database.  (some function then, would execute the generated SQL query and either pass the results to the LLM for inclusion in a friendly response, or pass the results directly back to the calling program)
+
+We can limit the chance of costly queries if we construct a PreparedStatement and only ask the LLM to fill in the variables:
+
+```
+SELECT NICKNAME, (EXTRACT(YEAR FROM AGE(current_date, bd))) as AGE FROM zoo.animals WHERE le = %S AND ss = %s LIMIT 1; 
+```
+
+* To demonstrate how an LLM might be able to parse natural language and assign variables as needed:
 
 First - start the program using the sql prompt template:
 
@@ -265,10 +273,10 @@ First - start the program using the sql prompt template:
 python3 simpleLLM_with_cache.py 6 nostore sql
 ```
 
-Next - ask the program the following: (this assumes you can look up the PreparedStatement effectively based on the context from the user prompt and the overarching purpose of the bot session in question)
+Next - ask the program the following: (this assumes that there is only one logical path forward or you can look up the PreparedStatement effectively based on the context from the user prompt and the overarching purpose of the bot session in question)
 
 ```
-Given the following PreparedStatement populate it with values from the quoted text: SELECT NAME, AGE FROM ZOO WHERE LOCALE = %S AND SPECIES = %s;   "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
+Given the following PreparedStatement populate it with values from the quoted text: SELECT NAME, AGE FROM ZOO WHERE LOCALE = %S AND SPECIES = %s LIMIT 1;   "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
 ```
 
 

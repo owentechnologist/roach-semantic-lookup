@@ -103,6 +103,7 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
     ) > 80
     ORDER BY "Percent Match" DESC
     LIMIT 2;'''
+    
     args = (star_rating_filter,)
     try:
         with get_connection() as conn:
