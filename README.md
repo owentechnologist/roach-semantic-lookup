@@ -265,6 +265,7 @@ TEMPLATE_MAP = {
 ```
 
 # A simple example of RAG Retrieval Augmented Generative AI is available too.
+![RAG WORKFLOW](./mermaid_rag.png)
 ## (this behaves in a more dynamic but simlar fashion to the basic prompt engineering caused by selecting poet or gang or music, etc)
 ## to make this possible you must first load searchable embeddings and text into the database.
 ## this can be accomplished after starting the program and issuing the command 'load' at the prompt

@@ -1,0 +1,10 @@
+sequenceDiagram
+    User->>+App: [Query] What is the average weight of a plum?
+    App->>+DB: Vector Search for similar: [Query]
+    DB-->>-App: nothing matches
+    App->>+DB: Vector Search for related enrichment information (RAG)
+    DB-->>-App: Respond with XTRA data (text chunk) to augment LLM knowledge 
+    App->>+LLM: [Query] What is the average weight of a plum? (plus XTRA data 'our plums are over 1lb due to GMO')
+    LLM-->>-App: [text response statng avg weight is nearly 1lb with proprietary GMO]
+    App->>+DB: Store [text response] and vector embedding of [Query] ]
+    App-->>-User: [text response]
