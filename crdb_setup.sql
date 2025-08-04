@@ -25,6 +25,18 @@ CREATE TABLE IF NOT EXISTS vdb.llm_history(
    VECTOR INDEX (star_rating,prompt_embedding vector_cosine_ops) -- non-default cosine nearest neighbor support (default is L2 for KNN)
 );
 
+-- create the llm_enrichment table:  
+-- data in this table is used to augment prompts sent to an LLM
+-- note the use of the vector chunk_embedding
+-- a sophisticated chunking strategy could exploit the 'subject_matter' attribute for faster lookups
+CREATE TABLE IF NOT EXISTS vdb.llm_enrichment(
+   pk UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   subject_matter string,
+   chunk_embedding VECTOR(768),
+   text_chunk string,
+   VECTOR INDEX (subject_matter, chunk_embedding vector_cosine_ops) -- non-default cosine nearest neighbor support (default is L2 for KNN)
+);
+
 -- just a simple check for any rows 
 SELECT COUNT(*) from vdb.llm_history;
 

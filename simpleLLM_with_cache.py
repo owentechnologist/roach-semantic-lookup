@@ -39,14 +39,13 @@ import time,uuid
 # prompt templates for LLM:
 from prompt_templates import *
 # UI and Redis connection functions: ###
-from cmdline_utils import *
+from project_utils import *
+# rag text retrieval function:
+from rag_similarity_helper import *
 
-def get_connection():
-        # use unpacking operator ** to turn dict to separate args:
-        return psycopg.connect(**db_config)
 
 def check_star_rating(pk):
-    txt = input(f'\n{spacer}\nHow many stars from 1 to 5 (where 5 is best) do you give that response?  ')
+    txt = input(f'\n{spacer}\nFrom 1 to 5 (where 5 is best) please rate that response: \t')
     star_rating=int(txt)
     update_star_rating(star_rating,pk)
 
@@ -82,9 +81,10 @@ def insert_llm_prompt_response(prompt_embedding,prompt_text,llm_response_text):
 
 # the query filters results using both the user-assigned star_rating_filter and 
 # the semantic similarity of the prompt to prior stored prompts
-# they must be 50% semantically similar to be returned
+# they must be threshold% semantically similar to be returned
 def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
     pk = None
+    threshold = 80
     query=f'''WITH target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv
     )
@@ -100,11 +100,11 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
     AND ROUND(
         GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
         2
-    ) > 80
+    ) > %s
     ORDER BY "Percent Match" DESC
     LIMIT 2;'''
     
-    args = (star_rating_filter,)
+    args = (star_rating_filter,threshold,)
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -130,9 +130,14 @@ def ask_llm(question):
     # HERE IS WHERE your specification of a different prompt_template function as the third argument to this program takes effect:
     # example program startup where the template matching 'gang' is used:  (see code in prompt_templates.py)
     # python3 simpleLLM_with_cache.py 6 nostore gang
-    template_=template_func(question) 
+    if rag==True: #fetch additional information to include in prompt to LLM:
+        prompt_vector=create_embedding(question)
+        augmentation_text=rag_query_using_vector_similarity("public_customer_stories",prompt_vector)
+        wrapped_prompt=template_func(augmentation_text,question) 
+    else:
+        wrapped_prompt=template_func(question) 
 
-    llm_request_data = {"model": "tinyswallow-1.5b-instruct","response_format": {"type": "json"}, "messages": [{"role": "user", "content": f"{template_}"}], "temperature": temperature}
+    llm_request_data = {"model": "tinyswallow-1.5b-instruct","response_format": {"type": "json"}, "messages": [{"role": "user", "content": f"{wrapped_prompt}"}], "temperature": temperature}
     print(f"DEBUG: we are sending this to the LLM:\n {llm_request_data}")
     headers =  {"Content-Type": "application/json"}    
     myResponse = requests.post(llm_chat_url,json=llm_request_data,headers=headers )
@@ -157,12 +162,7 @@ def main_routine():
     while True:    
         sentences = [display_menu()]
         user_input = sentences
-        model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
-        
-        # create the numpy array encoding representation of the sentences/prompt:
-        prompt_ndarr = model.encode(sentences[0])
-        # convert it to a format acceptable to crdb:
-        prompt_embedding = prompt_ndarr.tolist()
+        prompt_embedding = create_embedding(sentences)
         # pass the user text/prompt to the LLM Chain and print out the response: 
         # also, check for a suitable cached response
         if user_input:

@@ -227,19 +227,73 @@ python3 simpleLLM_with_cache.py 6
 python3 simpleLLM_with_cache.py 6 nostore
 ```
 
-## prompt engineering and context management:
+# prompt engineering and context management:
 
-You may also adjust the prompts used in simpleLLM_with_cache.py and prompt_templates.py to adjust the behavior of the LLM 
+## You may also adjust the prompts used in simpleLLM_with_cache.py and prompt_templates.py to adjust the behavior of the LLM 
 
-The existing logic insists on the ordering of args to the program and when you specify a prompt to modify the flavour of the LLM response, that response will not be persisted to the database.  (fork the project and have at it if you wish other behavior) 
+The existing logic insists on the ordering of args to the program and when you specify a prompt to modify the flavour of the LLM response, that response will not be persisted to the database.  (fork the project and change it if you wish other behavior) 
 
-If you wish to specify a non-default prompt to the LLM, start the program adding as an argument the keyname of the prompt template you wish to send to the LLM with each request like so:
+If you wish to specify a non-default prompt to the LLM, start the program; adding as an argument the keyname of the prompt template you wish to send to the LLM with each request like so:
 
 ```
-python3 simpleLLM_with_cache.py 6 nostore poetry
+python3 simpleLLM_with_cache.py 6 nostore poet
 ```
 
-# here is a good examople of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
+* You could then provide a prompt like:  
+
+```
+tell me about Spencer
+```
+
+and recieve a strange response!
+
+
+## You can try your hand at more prompt engineering by playing with the alternate templates provided in the file: prompt_templates.py: ( the user input can be couched in such a template to modify the output of the LLM )
+
+Look at the code in prompt_templates.py:
+
+```
+TEMPLATE_MAP = {
+    "base": template_base,
+    "cockroach": template_cockroach,
+    "music": template_music,
+    "gang": template_gang,
+    "poet": template_poet,
+    "rag": template_rag,
+    "sql": template_sql_tool
+}
+```
+
+# A simple example of RAG Retrieval Augmented Generative AI is available too.
+## (this behaves in a more dynamic but simlar fashion to the basic prompt engineering caused by selecting poet or gang or music, etc)
+## to make this possible you must first load searchable embeddings and text into the database.
+## this can be accomplished after starting the program and issuing the command 'load' at the prompt
+## the data in the ragdata.json file will be loaded into the database and will allow for some simple RAG examples 
+## when you restart the program, the database will have some specific information stored that will 
+## provide details for related prompts 
+## to test, start the program with the 'rag' argument:
+
+```
+python3 simpleLLM_with_cache.py 6 nostore rag
+```
+
+* You could then provide a prompt like:  
+
+```
+tell me about Spencer
+```
+
+* or:
+
+```
+what database did shipt use before they switched to cockroachDB?
+```
+
+## if the augmentation data is loaded, you should get a rich reply that hones in on the provided data
+
+
+# another use case that is becoming popular is the use of agentic AI where an LLM generates code dynamically (sometimes executing it as well)
+## Let's consider an example of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
 
 ```
 +-----+----------+----------+--------+----------+
@@ -279,19 +333,8 @@ Next - ask the program the following: (this assumes that there is only one logic
 Given the following PreparedStatement populate it with values from the quoted text: SELECT NAME, AGE FROM ZOO WHERE LOCALE = %S AND SPECIES = %s LIMIT 1;   "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
 ```
 
+## you should be able to understand how the above full prompt could be dynamically constructed at runtime using a combination of RAG and prompt engineering and possibly some routing/filtering based on environment or user-specific data
 
-## You can try your hand at prompt engineering by playing with the alternate templates provided in the file: prompt_templates.py: ( the user input can be couched in such a template to modify the output of the LLM )
-Look at the code in prompt_templates.py:
-```
-TEMPLATE_MAP = {
-    "base": template_base,
-    "cockroach": template_cockroach,
-    "music": template_music,
-    "gang": template_gang,
-    "poet": template_poet,
-    "sql": template_sql_tool
-}
-```
 
 6. When you are done using this environment you can deactivate it:
 

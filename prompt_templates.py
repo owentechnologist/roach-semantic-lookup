@@ -52,13 +52,16 @@ Question: the input question you must answer with poetic grace: {user_prompt}
 
 Answer: Indulge me as I sing... """
 
-### This next template assumes the use of some additional chat memory or data: As of 2025-07-11 not yet implemented
-def template_cm(memories_for_template,user_prompt):
+### This next template assumes the use of some additional chat memory or data to be used to inform the LLM response: 
+### This opens up RAG where the augmentation_text is fetched from the DB before the LLM is invoked 
+### Note that nothing prevents RAG results from also being cached - speeding up the experience
+#   As of 2025-08-01 not yet implemented in this example
+def template_rag(augmentation_text,user_prompt):
     return f"""Use the data provided below in your reply when it can inform your answer.
 
-{memories_for_template}
+{augmentation_text}
 
-You proudly focus on answering this Question:  {user_prompt}
+Keeping the above information in mind you succinctly answer this Question:  {user_prompt}
 
 Answer: As I review the data, I understand...
 """
@@ -78,5 +81,6 @@ TEMPLATE_MAP = {
     "music": template_music,
     "gang": template_gang,
     "poet": template_poet,
+    "rag": template_rag,
     "sql": template_sql_tool
 }
