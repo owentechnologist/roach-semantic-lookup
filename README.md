@@ -3,7 +3,11 @@
 # roach-semantic-lookup & prompt customization
 This example calls an LLM, stores the LLM response as text, along with both a vector embedding of the prompt and the text of the prompt used. The datastore used is CRDB.  The example showcases searching for a prompt using Vector Search in order to avoid repeated calls to the LLM.  The example also offers a simple way to adjust the prompt sent to the llm which showcases variety in LLM behavior ranging from a helpful FAQ to a SQL customizer, capable of populating preparedStatements with relevant arguments. 
 
-## This example showcases a pattern known as semantic caching.
+## This example starts with a pattern known as semantic caching.
+
+## It also highlights the impact of prompt engineering and encourages you to adjust the prompt template used as well as experiment with RAG (Retrieval Augmented Generative AI). (Scan this document for the full set of startup options)
+
+
 
 non-cached workflow when interacting with an LLM:
 
@@ -198,7 +202,7 @@ pip3 install -r requirements.txt
 
 5. SEVERAL THINGS ARE HARD CODED IN THIS EXAMPLE! (for example the use of localhost for both crdb and localAI connections)
 
-Edit your local copy of the code in cmdline_utils.py as you prefer/need for the connection settings.  
+Edit your local copy of the code in project_utils.py as you prefer/need for the connection settings.  
 
 
 To use the default star_rating filter of 3 or better stars just call the program:
