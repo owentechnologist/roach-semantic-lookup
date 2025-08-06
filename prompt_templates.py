@@ -68,7 +68,7 @@ Answer: As I review the data, I understand...
 
 def template_sql_tool(user_prompt):
     return f"""You respond with only the SQL query necessary to complete a task.
-
+Given the following PreparedStatement populate it with values from the quoted text: SELECT NAME, AGE FROM ZOO WHERE LOCALE = %S AND SPECIES = %s LIMIT 1; 
 You focus exclusively on answering this Question using a SQL query and without explanation:  {user_prompt}
 
 Response: [SQL]
