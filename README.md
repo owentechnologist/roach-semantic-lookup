@@ -331,10 +331,10 @@ python3 simpleLLM_with_cache.py 6 nostore sql
 Next - ask the program the following: (this assumes that there is only one logical path forward or you can look up the PreparedStatement effectively based on the context from the user prompt and the overarching purpose of the bot session in question)
 
 ```
-Given the following PreparedStatement populate it with values from the quoted text: SELECT NAME, AGE FROM ZOO WHERE LOCALE = %S AND SPECIES = %s LIMIT 1;   "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
+"I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
 ```
 
-## you should be able to understand how the above full prompt could be dynamically constructed at runtime using a combination of RAG and prompt engineering and possibly some routing/filtering based on environment or user-specific data
+## Whil the prepared statement is currently hard-coded in the prompt template, you should be able to understand how the full prompt could be dynamically constructed at runtime using a combination of RAG and prompt engineering and possibly some routing/filtering based on environment or user-specific data
 
 
 6. When you are done using this environment you can deactivate it:
