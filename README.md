@@ -5,12 +5,14 @@ This example calls an LLM, stores the LLM response as text, along with both a ve
 
 ## This example showcases a pattern known as semantic caching. LOOK AT THE TIME DIFFERENCE (all services are running on the same laptop)
 
-[!NOTE] * Example LLM use with no cache:
+[!NOTE] 
+* Example LLM use with no cache:
 
 ![semantic caching](./resources/llm_nocache.png)
 
 
-[!NOTE] * Example LLM use with cache enabled (semantic match for similar query):
+[!NOTE] 
+* Example LLM use with cache enabled (semantic match for similar query):
 
 ![semantic caching](./resources/llm_fromdbsave.png)
 
@@ -19,7 +21,8 @@ This example calls an LLM, stores the LLM response as text, along with both a ve
 
 
 
-[!NOTE] non-cached workflow when interacting with an LLM:
+[!NOTE] 
+non-cached workflow when interacting with an LLM:
 
 ```
 A: (UserPrompt as text is generated/accepted by system) 
@@ -28,7 +31,8 @@ C: (LLMResponse as Text is returned to user)
 ```
 ![Direct Call to LLM](./resources/llm_direct.png)
 
-[!NOTE] Semantic caching workflow Successful match:
+[!NOTE] 
+Semantic caching workflow Successful match:
 
 ```
 start workflow
@@ -211,6 +215,7 @@ etc ...
 pip3 install -r requirements.txt
 ```
 
+[!IMPORTANT] 
 5. SEVERAL THINGS ARE HARD CODED IN THIS EXAMPLE! (for example the use of localhost for both crdb and localAI connections)
 
 Edit your local copy of the code in project_utils.py as you prefer/need for the connection settings.  
@@ -225,7 +230,8 @@ python3 bottlewebinterface.py
 
 ## the web interface allows you to choose a prompt template or rag wrapper (see below for setup) for the LLM and offers the choice to save the generated responses in the database for rapid reuse
 
-[!NOTE] The UI looks like this:
+[!NOTE] 
+The UI looks like this:
 
 ![LLM / cache / rag web interface](./resources/llm_webform1.png)
 
@@ -245,7 +251,8 @@ try asking:  " who is Spencer? "  using different prompt templates
 
 # note that the rag option will specifically allow for retrieving context and information dynamically (edit the ragdata.json file to add additional data)
 
-[!NOTE] If you haven't already: try asking:  " who is Spencer? "  using rag
+[!NOTE] 
+If you haven't already: try asking:  " who is Spencer? "  using rag
 
 <hr>
 
