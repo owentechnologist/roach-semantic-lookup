@@ -221,6 +221,8 @@ Edit your local copy of the code in project_utils.py as you prefer/need for the 
 python3 bottlewebinterface.py
 ```
 
+## try it out by going to http://localhost:2020/menu 
+
 ## the web interface allows you to choose a prompt template or rag wrapper (see below for setup) for the LLM and offers the choice to save the generated responses in the database for rapid reuse
 
 The UI looks like this:
@@ -244,6 +246,45 @@ try asking:  " who is Spencer? "  using different prompt templates
 # note that the rag option will specifically allow for retrieving context and information dynamically (edit the ragdata.json file to add additional data)
 
 If you haven't already: try asking:  " who is Spencer? "  using rag
+
+<hr>
+
+* You could then provide a prompt like:  
+
+```
+tell me about Spencer
+```
+
+* or:
+
+```
+what database did shipt use before they switched to cockroachDB?
+```
+
+## if the augmentation data is loaded, you should get a rich reply that hones in on the provided data
+
+
+# The 'sql' template points us towards another use case that is becoming popular: the use of agentic AI where an LLM generates code dynamically (sometimes executing it as well). <em>NB: As of 2025-08-08 the SQL is generated and revealed as a response, but not executed.</em>
+
+## Let's consider an example of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
+
+```
++-----+----------+----------+--------+----------+
+ID    | name     | species  | locale |    bd    |
++-----+----------+----------+--------+----------+
+as16e | Gloria   | gorilla  | india  | 19971106 |
+kj87g | Max      | tiger    | nepal  | 20100102 |
+sv278 | Bubbles  | elephant | kenya  | 20180617 |
++-----+----------+----------+--------+----------+ 
+```
+
+Imagine a table containing all the animals in a zoo with their names, species, original locale, age etc.
+
+With the correct template and additional workflow, we can dynamically query such a table based on a user's natural language question like this one:
+
+### "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
+
+You can solve for this by manipulating the prompt sent to an LLM so that it dynamically generates a SQL query capable of retrieving the answer from a traditional database.  (some function then, would execute the generated SQL query and either pass the results to the LLM for inclusion in a friendly response, or pass the results directly back to the calling program)
 
 <hr/><p/><hr/>
 
