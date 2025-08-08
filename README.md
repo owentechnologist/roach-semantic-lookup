@@ -1,4 +1,4 @@
-![semantic caching](./semanticcaching.png)
+![semantic caching](./resources/semanticcaching.png)
 
 # roach-semantic-lookup & prompt customization
 This example calls an LLM, stores the LLM response as text, along with both a vector embedding of the prompt and the text of the prompt used. The datastore used is CRDB.  The example showcases searching for a prompt using Vector Search in order to avoid repeated calls to the LLM.  The example also offers a simple way to adjust the prompt sent to the llm which showcases variety in LLM behavior ranging from a helpful FAQ to a SQL customizer, capable of populating preparedStatements with relevant arguments. 
@@ -7,12 +7,12 @@ This example calls an LLM, stores the LLM response as text, along with both a ve
 
 * Example LLM use with no cache:
 
-![semantic caching](./llm_nocache.png)
+![semantic caching](./resources/llm_nocache.png)
 
 
 * Example LLM use with cache enabled (semantic match for similar query):
 
-![semantic caching](./llm_fromdbsave.png)
+![semantic caching](./resources/llm_fromdbsave.png)
 
 
 ## It also highlights the impact of prompt engineering and encourages you to adjust the prompt template used as well as experiment with RAG (Retrieval Augmented Generative AI). (Scan this document for the full set of startup options)
@@ -26,7 +26,7 @@ A: (UserPrompt as text is generated/accepted by system)
 B: Call LLM API with UserPrompt as text
 C: (LLMResponse as Text is returned to user)
 ```
-![Direct Call to LLM](./llm_direct.png)
+![Direct Call to LLM](./resources/llm_direct.png)
 
 Semantic caching workflow Successful match:
 
@@ -40,7 +40,7 @@ If
    D: Fetch Associated Stored LLM Text response and return to user
 end workflow
 ```
-![Query DB for similar query and existing response](./semantic_cache_hit.png)
+![Query DB for similar query and existing response](./resources/semantic_cache_hit.png)
 
 
 Semantic caching workflow No match:
@@ -58,7 +58,7 @@ If
 end workflow
 ```
 
-![Query DB fail](./semantic_cache_miss.png)
+![Query DB fail](./resources/semantic_cache_miss.png)
 
 ## This example Uses https://localai.io/ and CockroachDB to demonstrate basic Semantic Caching of responses to user prompts made to an LLM.
 
@@ -227,7 +227,7 @@ python3 bottlewebinterface.py
 
 The UI looks like this:
 
-![LLM / cache / rag web interface](./llm_webform1.png)
+![LLM / cache / rag web interface](./resources/llm_webform1.png)
 
 # play with different prompt templates by typing them in the first field then watch for the different responses generated
 
@@ -235,7 +235,7 @@ try asking:  " who is Spencer? "  using different prompt templates
 
 # A simple example of RAG Retrieval Augmented Generative AI is available too.
 
-![RAG WORKFLOW](./mermaid_rag.png)
+![RAG WORKFLOW](./resources/mermaid_rag.png)
 
 ### (this behaves in a more dynamic but similar fashion to the basic prompt engineering caused by selecting poet or gang or music, etc) to make this possible you must first load searchable embeddings and text into the database. <em>This can be accomplished using the command line program 'simpleLLM_with_cache.py and issuing the command 'load' at the prompt. </em> 
 
