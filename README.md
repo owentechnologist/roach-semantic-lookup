@@ -217,6 +217,7 @@ pip3 install -r requirements.txt
 ```
 
 >[!IMPORTANT] 
+... 
 
 5. SEVERAL THINGS ARE HARD CODED IN THIS EXAMPLE! (for example the use of localhost for both crdb and localAI connections)
 
@@ -424,7 +425,7 @@ Next - ask the program the following: (this assumes that there is only one logic
 "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
 ```
 
-## Whil the prepared statement is currently hard-coded in the prompt template, you should be able to understand how the full prompt could be dynamically constructed at runtime using a combination of RAG and prompt engineering and possibly some routing/filtering based on environment or user-specific data
+## While the prepared statement is currently hard-coded in the prompt template, you should be able to understand how the full prompt could be dynamically constructed at runtime using a combination of RAG and prompt engineering and possibly some routing/filtering based on environment or user-specific data
 
 
 6. When you are done using this environment you can deactivate it:
