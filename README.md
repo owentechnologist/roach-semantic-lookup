@@ -5,12 +5,12 @@ This example calls an LLM, stores the LLM response as text, along with both a ve
 
 ## This example showcases a pattern known as semantic caching. LOOK AT THE TIME DIFFERENCE (all services are running on the same laptop)
 
-* Example LLM use with no cache:
+<span style="color: red;">* Example LLM use with no cache:</span>
 
 ![semantic caching](./resources/llm_nocache.png)
 
 
-* Example LLM use with cache enabled (semantic match for similar query):
+<span style="color: red;">* Example LLM use with cache enabled (semantic match for similar query):</span>
 
 ![semantic caching](./resources/llm_fromdbsave.png)
 
@@ -19,7 +19,7 @@ This example calls an LLM, stores the LLM response as text, along with both a ve
 
 
 
-non-cached workflow when interacting with an LLM:
+<span style="color: red;">non-cached workflow when interacting with an LLM:</span>
 
 ```
 A: (UserPrompt as text is generated/accepted by system) 
@@ -28,7 +28,7 @@ C: (LLMResponse as Text is returned to user)
 ```
 ![Direct Call to LLM](./resources/llm_direct.png)
 
-Semantic caching workflow Successful match:
+<span style="color: red;">Semantic caching workflow Successful match:</span>
 
 ```
 start workflow
@@ -43,7 +43,7 @@ end workflow
 ![Query DB for similar query and existing response](./resources/semantic_cache_hit.png)
 
 
-Semantic caching workflow No match:
+<span style="color: red;">Semantic caching workflow No match:</span>
 
 ```
 start workflow
@@ -68,7 +68,7 @@ To run the example, which utilizes CRDB Vector Similarity Search Queries, you wi
 
 ## install and Initialize a cockroach database to act as a vectorDB:
 
-
+<span style="color: purple;">
 ** download cockroachdb binary (you can use a single instance for testing) 
 
 for mac you do:
@@ -166,6 +166,8 @@ We can change the cached response to be more to our liking:
 ```
 UPDATE llm_history SET llm_response='Toothpaste helps clean teeth and polish silver jewellry.' where prompt_text='what is toothpaste good for?';
 ```
+</span>
+
 ## Python-preparation Steps for running the samples on your dev machine:
 
 
@@ -210,10 +212,11 @@ etc ...
 ```
 pip3 install -r requirements.txt
 ```
-
+<span style="color: red;">
 5. SEVERAL THINGS ARE HARD CODED IN THIS EXAMPLE! (for example the use of localhost for both crdb and localAI connections)
 
 Edit your local copy of the code in project_utils.py as you prefer/need for the connection settings.  
+</span>
 
 # A simple web interface is available for use and is started using:
 
@@ -225,7 +228,7 @@ python3 bottlewebinterface.py
 
 ## the web interface allows you to choose a prompt template or rag wrapper (see below for setup) for the LLM and offers the choice to save the generated responses in the database for rapid reuse
 
-The UI looks like this:
+<span style="color: red;">The UI looks like this:</span>
 
 ![LLM / cache / rag web interface](./resources/llm_webform1.png)
 
@@ -245,7 +248,7 @@ try asking:  " who is Spencer? "  using different prompt templates
 
 # note that the rag option will specifically allow for retrieving context and information dynamically (edit the ragdata.json file to add additional data)
 
-If you haven't already: try asking:  " who is Spencer? "  using rag
+<span style="color: red;">If you haven't already: try asking:  " who is Spencer? "  using rag</span>
 
 <hr>
 
