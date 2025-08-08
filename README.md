@@ -221,7 +221,7 @@ Edit your local copy of the code in project_utils.py as you prefer/need for the 
 python3 bottlewebinterface.py
 ```
 
-## the web interface allows you to choose a prompt template or rag wrapper for the LLM and offers the choice to save the generated responses in the database for rapid reuse
+## the web interface allows you to choose a prompt template or rag wrapper (see below for setup) for the LLM and offers the choice to save the generated responses in the database for rapid reuse
 
 The UI looks like this:
 
@@ -231,11 +231,23 @@ The UI looks like this:
 
 try asking:  " who is Spencer? "  using different prompt templates
 
+# A simple example of RAG Retrieval Augmented Generative AI is available too.
+
+![RAG WORKFLOW](./mermaid_rag.png)
+
+### (this behaves in a more dynamic but similar fashion to the basic prompt engineering caused by selecting poet or gang or music, etc) to make this possible you must first load searchable embeddings and text into the database. <em>This can be accomplished using the command line program 'simpleLLM_with_cache.py and issuing the command 'load' at the prompt. </em> 
+
+### With the above command issued, the data in the ragdata.json file will be loaded into the database and will allow for some simple RAG examples to work
+
+### when you restart the program, the database will have some specific information stored that will provide details for related prompts 
+
 # note that the rag option will specifically allow for retrieving context and information dynamically (edit the ragdata.json file to add additional data)
 
 If you haven't already: try asking:  " who is Spencer? "  using rag
 
 <hr/><p/><hr/>
+
+
 ## The below is information on the clunky CLI version which requires restarts to enable changes to the prompt and storage options:
 
 To use the default star_rating filter of 3 or better stars just call the program:
@@ -300,11 +312,7 @@ TEMPLATE_MAP = {
 }
 ```
 
-# A simple example of RAG Retrieval Augmented Generative AI is available too.
-![RAG WORKFLOW](./mermaid_rag.png)
-### (this behaves in a more dynamic but similar fashion to the basic prompt engineering caused by selecting poet or gang or music, etc) to make this possible you must first load searchable embeddings and text into the database. This can be accomplished after starting the program and issuing the command 'load' at the prompt.  The data in the ragdata.json file will be loaded into the database and will allow for some simple RAG examples 
-### when you restart the program, the database will have some specific information stored that will provide details for related prompts 
-## to test, start the program with the 'rag' argument:
+## to test rag from the command line, start the program with the 'rag' argument:
 
 ```
 python3 simpleLLM_with_cache.py 6 nostore rag
