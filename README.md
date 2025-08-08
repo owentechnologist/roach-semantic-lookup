@@ -5,14 +5,14 @@ This example calls an LLM, stores the LLM response as text, along with both a ve
 
 ## This example showcases a pattern known as semantic caching. LOOK AT THE TIME DIFFERENCE (all services are running on the same laptop)
 
-[!NOTE] 
-* Example LLM use with no cache:
+>[!NOTE] 
+> * Example LLM use with no cache:
 
 ![semantic caching](./resources/llm_nocache.png)
 
 
-[!NOTE] 
-* Example LLM use with cache enabled (semantic match for similar query):
+>[!NOTE] 
+> * Example LLM use with cache enabled (semantic match for similar query):
 
 ![semantic caching](./resources/llm_fromdbsave.png)
 
