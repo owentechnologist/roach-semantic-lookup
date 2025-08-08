@@ -1,73 +1,16 @@
 ![semantic caching](./resources/semanticcaching.png)
 
 # roach-semantic-lookup & prompt customization
-This example calls an LLM, stores the LLM response as text, along with both a vector embedding of the prompt and the text of the prompt used. The datastore used is CRDB.  The example showcases searching for a prompt using Vector Search in order to avoid repeated calls to the LLM.  The example also offers a simple way to adjust the prompt sent to the llm which showcases variety in LLM behavior ranging from a helpful FAQ to a SQL customizer, capable of populating preparedStatements with relevant arguments. 
 
-## This example showcases a pattern known as semantic caching. LOOK AT THE TIME DIFFERENCE (all services are running on the same laptop)
+This example calls an LLM, stores the LLM response as text, along with both a vector embedding of the prompt and the text of the prompt used. The datastore used is CRDB. (Cockroach Database) 
 
->[!NOTE] 
-> * Example LLM use with no cache:
+The example showcases searching for a prompt using Vector Search in order to avoid repeated calls to the LLM.  The example also offers a simple way to adjust the prompt sent to the llm which showcases variety in LLM behavior ranging from a helpful FAQ to a SQL customizer, capable of populating preparedStatements with relevant arguments. 
 
-![semantic caching](./resources/llm_nocache.png)
+## This project Uses https://localai.io/ and CockroachDB to demonstrate patterns commonly used with generative AI -specifically with a LLM.
 
+You can look at some sequence diagrams and see some screenshots etc here: 
+![more info](./patterns_sequences.md)
 
->[!NOTE] 
-> * Example LLM use with cache enabled (semantic match for similar query):
-
-![semantic caching](./resources/llm_fromdbsave.png)
-
-
-## It also highlights the impact of prompt engineering and encourages you to adjust the prompt template used as well as experiment with RAG (Retrieval Augmented Generative AI). (Scan this document for the full set of startup options)
-
-
-
->[!NOTE] 
-> non-cached workflow when interacting with an LLM:
-
-```
-A: (UserPrompt as text is generated/accepted by system) 
-B: Call LLM API with UserPrompt as text
-C: (LLMResponse as Text is returned to user)
-```
-![Direct Call to LLM](./resources/llm_direct.png)
-
->[!NOTE] 
-> Semantic caching workflow Successful match:
-
-```
-start workflow
-A: (UserPrompt as text is generated/accepted by system) 
-B: (UserPrompt as embedding is generated) 
-C: CRDB Vector Similarity Query issued to check for existing responses to same semantic prompt 
-If 
-   Match to an existing stored UserPrompt Embedding exists : 
-   D: Fetch Associated Stored LLM Text response and return to user
-end workflow
-```
-![Query DB for similar query and existing response](./resources/semantic_cache_hit.png)
-
-
->[!NOTE] 
-> Semantic caching workflow No match:
-
-```
-start workflow
-A: (UserPrompt as text is generated/accepted by system) 
-B: (UserPrompt as embedding is generated) 
-C: CRDB Vector Similarity Query issued to check for existing responses to same semantic prompt 
-If 
-    No Match to an existing stored UserPrompt Embedding exists : 
-    D: Call LLM API with UserPrompt as text 
-    E:  Store UserPrompt Embedding along with userPrompt as text and LLMResponse as Text in CRDB
-    F:  Return LLM Text response to user
-end workflow
-```
-
-![Query DB fail](./resources/semantic_cache_miss.png)
-
-## This example Uses https://localai.io/ and CockroachDB to demonstrate basic Semantic Caching of responses to user prompts made to an LLM.
-
-Again: This project is an example of using CRDB Vector Similarity Search/Queries with Python
 
 To run the example, which utilizes CRDB Vector Similarity Search Queries, you will need a connection to a Large Language Model (LLM) and a connection to CRDB version 25.2.1 or higher. 
 
@@ -158,7 +101,7 @@ use vdb;
 A sample query you may want to try after some prompts and responses have been collected.
 
 ```
-select prompt_text,star_rating from llm_history order by star_rating asc;
+select prompt_text,star_rating,prompt_template from llm_history order by star_rating asc;
 ```
 
 Or, perhaps you would like to curate and modify a generated response.
@@ -171,7 +114,7 @@ We can change the cached response to be more to our liking:
 UPDATE llm_history SET llm_response='Toothpaste helps clean teeth and polish silver jewellry.' where prompt_text='what is toothpaste good for?';
 ```
 
-## Python-preparation Steps for running the samples on your dev machine:
+## Python-preparation Steps for running the project on your dev machine:
 
 
 1. Create a virtual environment:
@@ -242,10 +185,6 @@ python3 bottlewebinterface.py
 
 try asking:  " who is Spencer? "  using different prompt templates
 
-# A simple example of RAG Retrieval Augmented Generative AI is available too.
-
-![RAG WORKFLOW](./resources/mermaid_rag.png)
-
 ### (this behaves in a more dynamic but similar fashion to the basic prompt engineering caused by selecting poet or gang or music, etc) to make this possible you must first load searchable embeddings and text into the database. <em>This can be accomplished using the command line program 'simpleLLM_with_cache.py and issuing the command 'load' at the prompt. </em> 
 
 ### With the above command issued, the data in the ragdata.json file will be loaded into the database and will allow for some simple RAG examples to work
@@ -272,29 +211,6 @@ what database did shipt use before they switched to cockroachDB?
 ```
 
 ## if the augmentation data is loaded, you should get a rich reply that hones in on the provided data
-
-
-# The 'sql' template points us towards another use case that is becoming popular: the use of agentic AI where an LLM generates code dynamically (sometimes executing it as well). <em>NB: As of 2025-08-08 the SQL is generated and revealed as a response, but not executed.</em>
-
-## Let's consider an example of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
-
-```
-+-----+----------+----------+--------+----------+
-ID    | name     | species  | locale |    bd    |
-+-----+----------+----------+--------+----------+
-as16e | Gloria   | gorilla  | india  | 19971106 |
-kj87g | Max      | tiger    | nepal  | 20100102 |
-sv278 | Bubbles  | elephant | kenya  | 20180617 |
-+-----+----------+----------+--------+----------+ 
-```
-
-Imagine a table containing all the animals in a zoo with their names, species, original locale, age etc.
-
-With the correct template and additional workflow, we can dynamically query such a table based on a user's natural language question like this one:
-
-### "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
-
-You can solve for this by manipulating the prompt sent to an LLM so that it dynamically generates a SQL query capable of retrieving the answer from a traditional database.  (some function then, would execute the generated SQL query and either pass the results to the LLM for inclusion in a friendly response, or pass the results directly back to the calling program)
 
 <hr/><p/><hr/>
 
