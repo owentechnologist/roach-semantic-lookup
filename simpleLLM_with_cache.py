@@ -61,15 +61,15 @@ def update_star_rating(new_rating,pk):
     return 'update function returning...'
 
         
-def insert_llm_prompt_response(prompt_embedding,prompt_text,llm_response_text):
+def insert_llm_prompt_response(prompt_embedding,prompt_text,llm_response_text,prompt_template):
     if isinstance(prompt_text, list):
         prompt_text = ' '.join(str(x) for x in prompt_text)
     llm_response_text = llm_response_text.strip()
     new_pk=None
     query = f'''INSERT INTO vdb.llm_history 
-        (prompt_embedding, prompt_text, llm_response, star_rating)
-        VALUES ('{prompt_embedding}', %s, %s, 3) returning pk;'''
-    args = (prompt_text, llm_response_text)
+        (prompt_embedding, prompt_text, llm_response, star_rating, prompt_template)
+        VALUES ('{prompt_embedding}', %s, %s, 3, %s) returning pk;'''
+    args = (prompt_text, llm_response_text, prompt_template)
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -82,9 +82,12 @@ def insert_llm_prompt_response(prompt_embedding,prompt_text,llm_response_text):
 # the query filters results using both the user-assigned star_rating_filter and 
 # the semantic similarity of the prompt to prior stored prompts
 # they must be threshold% semantically similar to be returned
-def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
+def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prompt_template):
+    print(f"query_using_vector_similarity - using {prompt_template}")
     pk = None
     threshold = 80
+    cached_response = ""
+    similarity_percent=80
     query=f'''WITH target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv
     )
@@ -97,6 +100,7 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
     ) AS "Percent Match"
     FROM llm_history, target_vector
     WHERE star_rating >= %s
+    AND prompt_template = %s
     AND ROUND(
         GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
         2
@@ -104,7 +108,7 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
     ORDER BY "Percent Match" DESC
     LIMIT 2;'''
     
-    args = (star_rating_filter,threshold,)
+    args = (star_rating_filter,prompt_template,threshold,)
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -113,29 +117,34 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter):
                 if result:
                     pk = result[0] #pk
                     print("\nFound at least one prior similar prompt:\n")
-                    val=result[1] # stored llm_response
-                    val = val.strip()
-                    print(f"  - llm response:\n {val}\n\nStar Rating for LLM Response: {result[2]}, Prompt Similarity Percentage: {result[3]}%")
+                    cached_response=result[1] # stored llm_response
+                    cached_response = cached_response.strip()
+                    similarity_percent=result[3]
+                    print(f"  - llm response:\n {cached_response}\n\nStar Rating for LLM Response: {result[2]}, Prompt Similarity Percentage: {similarity_percent}%")
                 else:
                     print("No matching data.")
     except Exception as e:
         print(f"❌ Error during SQL Vector Similarity processing: {e}")
-    return pk
+    return {"pk": pk, "similarity_percent": similarity_percent, "cached_response": cached_response}
 
 ## This function is where we interact with the LLM 
 # - providing a prompt that guides the behavior as well as 
 # the question posed by the user:
-def ask_llm(question):
+def ask_llm(user_prompt,config_dict):
+    template_func=config_dict.get("template_func")
+    temperature=config_dict.get("temperature")
+    rag=config_dict.get("rag")
+    print(f"ask_llm system state: rag = {rag} template_func = {template_func} temperature = {temperature}")
     # a little prompt engineering is needed to get the answers in a usable format:
     # HERE IS WHERE your specification of a different prompt_template function as the third argument to this program takes effect:
     # example program startup where the template matching 'gang' is used:  (see code in prompt_templates.py)
     # python3 simpleLLM_with_cache.py 6 nostore gang
     if rag==True: #fetch additional information to include in prompt to LLM:
-        prompt_vector=create_embedding(question)
+        prompt_vector=create_embedding(user_prompt)
         augmentation_text=rag_query_using_vector_similarity("public_customer_stories",prompt_vector)
-        wrapped_prompt=template_func(augmentation_text,question) 
+        wrapped_prompt=template_func(augmentation_text,user_prompt) 
     else:
-        wrapped_prompt=template_func(question) 
+        wrapped_prompt=template_func(user_prompt) 
 
     llm_request_data = {"model": "tinyswallow-1.5b-instruct","response_format": {"type": "json"}, "messages": [{"role": "user", "content": f"{wrapped_prompt}"}], "temperature": temperature}
     print(f"DEBUG: we are sending this to the LLM:\n {llm_request_data}")
@@ -172,7 +181,7 @@ def main_routine():
             # now we can search for semantically similar prompt(s)
             # this function expects a user-created star_rating from 1 to 5 (5 star is best)
             #print('before DB vector query...')
-            pk = query_using_vector_similarity(prompt_embedding,star_rating_target)
+            pk = query_using_vector_similarity(prompt_embedding,star_rating_target,template_func.__name__).get("pk")
             #print(f'after DB vector query...  results type == {type(results)}')
             llm_response = ""
             if None==pk:
@@ -181,11 +190,12 @@ def main_routine():
                 print('\n Generating new Response...\n')
                 # create a new LLM-generated result as the answer:            
                 llm_interrupt_time=time.perf_counter()
-                llm_response = ask_llm(user_input) 
+                config_dict={"template_func":template_func,"temperature":temperature,"rag":rag}
+                llm_response = ask_llm(user_input,config_dict) 
                 llm_interrupt_time=time.perf_counter()-llm_interrupt_time
                 if nostore==False:
                     #print('before DB insert...')
-                    pk = insert_llm_prompt_response(prompt_embedding,user_input,llm_response)
+                    pk = insert_llm_prompt_response(prompt_embedding,user_input,llm_response,template_func.__name__)
                     #print('after DB insert...')
             # output whatever the result is to the User Interface:
             print(f'{spacer}\n{llm_response}{spacer}\n')

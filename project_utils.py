@@ -61,21 +61,28 @@ if len(sys.argv) > 2:
     nostore=True
     print(f'You have set the nostore to {nostore}, if True, no new data will be stored in the database')
 
+def configure_temperature_and_template(template_key):
+    temperature=.45
+    rag=False
+    # if the LLM is supposed to represent a gangster, the temperature needs to be increased to allow creativity:
+    if template_key=='gang':
+        temperature=1.5
+    # if the LLM is supposed to generate sql, the temperature needs to be decreased to enforce stricter syntax:
+    elif template_key=='sql':
+        temperature=.15
+    # if the LLM is supposed to receive additional information/an augmented prompt, we set the rag variable to True:
+    elif template_key=='rag':
+        rag=True
+    template_func=TEMPLATE_MAP.get(template_key,template_base)
+    print(f'You have set the prompt template to {template_func.__name__} the responses from the LLM will be impacted accordingly')
+    
+    return { "template_func": template_func, "temperature": temperature, "rag": rag}
+
 # this argument specifies the name of a prompt to use when invoking the LLM 
 # example template_gang
 if len(sys.argv) > 3:
-    prompt_template=sys.argv[3].strip()
-    # if the LLM is supposed to represent a gangster, the temperature needs to be increased to allow creativity:
-    if prompt_template=='gang':
-        temperature=1.5
-    # if the LLM is supposed to generate sql, the temperature needs to be decreased to enforce stricter syntax:
-    elif prompt_template=='sql':
-        temperature=.15
-    # if the LLM is supposed to receive additional information/an augmented prompt, we set the rag variable to True:
-    elif prompt_template=='rag':
-        rag=True
-    template_func=TEMPLATE_MAP.get(prompt_template,template_base)
-    print(f'You have set the prompt template to {template_func.__name__} the responses from the LLM will be impacted accordingly')
+    template_key=sys.argv[3].strip()
+    template_func=configure_temperature_and_template(template_key=template_key)
     if rag==True:
         sample_prompt = template_func(augmentation_text="This text augments the prompt sent to the LLM.",user_prompt="this is the original prompt")
     else:
@@ -141,6 +148,11 @@ def insert_text_chunk(text_embedding,subject_matter,text_chunk):
         print(f"❌ DB Error during insert_text_chunk processing: {e}")
     return new_pk
 
+# used as initialization through the use of the LOAD instruction 
+# (commandline only) 
+#  or if additional text chunks are added to the json file:
+# to prevent duplicates this simple sql can be used:
+#  delete from vdb.llm_enrichment where 1=1
 def load_augmentation_text():
     subject_matters, text_chunks = read_json_file()
     for i in range(len(subject_matters)):

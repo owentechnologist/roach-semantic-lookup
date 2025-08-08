@@ -3,3 +3,4 @@ requests
 sentence-transformers
 jsonpath-ng
 numpy<2
+bottle

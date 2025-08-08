@@ -21,8 +21,9 @@ CREATE TABLE IF NOT EXISTS vdb.llm_history(
    prompt_embedding VECTOR(768),
    prompt_text string,
    llm_response string,
+   prompt_template string NOT NULL DEFAULT 'template_base' CHECK (prompt_template IN ('template_base','template_music','template_gang','template_poet','template_rag','template_sql_tool')),
    star_rating smallint NOT NULL DEFAULT 3 CHECK (star_rating BETWEEN 1 AND 5),
-   VECTOR INDEX (star_rating,prompt_embedding vector_cosine_ops) -- non-default cosine nearest neighbor support (default is L2 for KNN)
+   VECTOR INDEX (star_rating,prompt_template,prompt_embedding vector_cosine_ops) -- non-default cosine nearest neighbor support (default is L2 for KNN)
 );
 
 -- create the llm_enrichment table:  

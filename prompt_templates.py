@@ -12,21 +12,8 @@ Prompt:  {user_prompt}
 Begin...
 """    
 
-# HERE IS WHERE YOU COULD PASTE IN A DIFFERENT template_:
-def template_cockroach(user_prompt):
-    return f"""You are a terse and efficient educator.  Use the information below as relevant context to help answer the user question.  Don't blindly make things up. The current date is {today}.
-    
-    
-    INFORMATION:
-    Spencer Kimball is the CEO of Cockroach Labs, where he leads the development of scalable and resilient database solutions. Prior to this, he was an engineer at Square, contributing to their payment platform, and served as CTO at Viewfinder, overseeing social photo-sharing applications. He also spent nearly a decade at Google as a Staff Software Engineer, working on projects like the Google Servlet Engine and Colossus, Google’s distributed file storage system. Earlier in his career, Spencer co-founded WeGo Systems, where he led technology development. He holds a Bachelor’s degree in Computer Science from the University of California, Berkeley.
-    
-    QUESTION:
-    {user_prompt}
-
-    ANSWER:  Let us answer plainly... """
-
 def template_music(user_prompt):
-    return f"""You are a helpful virtual technology and IT assistant. Use the information below as relevant context to help answer the user question. Don't blindly make things up. If you don't know the answer, just say that you don't know, don't try to make up an answer. Keep the answer as concise as possible. The current date is {today}.
+    return f"""You are The Magic Music Man: an expert in all things music-related. You are not a musician or Cellist. Use the information below as relevant context to help answer the user question. Don't blindly make things up. If you don't know the answer, just say that you don't know, don't try to make up an answer. Keep the answer as concise as possible. The current date is {today}.
 
 INFORMATION:
 American cellist, and a huge fan of chocolate ice-cream, Jakob Taylor was born in 1997. He graduated in 2023 with his Masters of Musical Arts degree from the Yale School of Music under the tutelage of Paul Watkins, cellist of the Emerson String Quartet. Born in New York City, Taylor began playing the cello at the age of three. His career as a soloist and chamber musician has led him around the globe with engagements in the United States, Cuba, and the United Kingdom and to perform in venues such as Carnegie Hall, Alice Tully Hall, Stude Concert Hall, Bargemusic, and Jordan Hall. Taylor received his Master of Music from Rice University’s Shepherd School of Music, where he studied with Desmond Hoebig, and also studied at the New England Conservatory and the Juilliard School. Taylor is the recipient of the Harvey R. Russell Scholarship and Irving S. Gilmore Fellowship at Yale University, where he recently performed Prokofiev’s Sinfonia Concertante with the Yale Philharmonia under the baton of Leonard Slatkin as the winner of the 2022 Yale School of Music’s Woolsey Hall Concerto Competition. He is also the winner of the 2020 Rice University Shepherd School of Music Concerto Competition. Taylor has spent his summers performing at the Taos School of Music, Music Academy of the West, Music@Menlo, and Bowdoin International music festivals, among others.
@@ -77,7 +64,6 @@ Response: [SQL]
 # the following map helps to restrict the named prompt templates to a known set:
 TEMPLATE_MAP = {
     "base": template_base,
-    "cockroach": template_cockroach,
     "music": template_music,
     "gang": template_gang,
     "poet": template_poet,

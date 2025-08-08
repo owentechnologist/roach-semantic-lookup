@@ -3,7 +3,17 @@
 # roach-semantic-lookup & prompt customization
 This example calls an LLM, stores the LLM response as text, along with both a vector embedding of the prompt and the text of the prompt used. The datastore used is CRDB.  The example showcases searching for a prompt using Vector Search in order to avoid repeated calls to the LLM.  The example also offers a simple way to adjust the prompt sent to the llm which showcases variety in LLM behavior ranging from a helpful FAQ to a SQL customizer, capable of populating preparedStatements with relevant arguments. 
 
-## This example starts with a pattern known as semantic caching.
+## This example showcases a pattern known as semantic caching. LOOK AT THE TIME DIFFERENCE (all services are running on the same laptop)
+
+* Example LLM use with no cache:
+
+![semantic caching](./llm_nocache.png)
+
+
+* Example LLM use with cache enabled (semantic match for similar query):
+
+![semantic caching](./llm_fromdbsave.png)
+
 
 ## It also highlights the impact of prompt engineering and encourages you to adjust the prompt template used as well as experiment with RAG (Retrieval Augmented Generative AI). (Scan this document for the full set of startup options)
 
@@ -120,6 +130,7 @@ WITH target_vector AS (
     ) AS "Percent Match"
     FROM llm_history, target_vector
     WHERE star_rating >= %s
+    AND prompt_template = %s
     AND ROUND(
         GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
         2
@@ -204,6 +215,28 @@ pip3 install -r requirements.txt
 
 Edit your local copy of the code in project_utils.py as you prefer/need for the connection settings.  
 
+# A simple web interface is available for use and is started using:
+
+```
+python3 bottlewebinterface.py
+```
+
+## the web interface allows you to choose a prompt template or rag wrapper for the LLM and offers the choice to save the generated responses in the database for rapid reuse
+
+The UI looks like this:
+
+![LLM / cache / rag web interface](./llm_webform1.png)
+
+# play with different prompt templates by typing them in the first field then watch for the different responses generated
+
+try asking:  " who is Spencer? "  using different prompt templates
+
+# note that the rag option will specifically allow for retrieving context and information dynamically (edit the ragdata.json file to add additional data)
+
+If you haven't already: try asking:  " who is Spencer? "  using rag
+
+<hr/><p/><hr/>
+## The below is information on the clunky CLI version which requires restarts to enable changes to the prompt and storage options:
 
 To use the default star_rating filter of 3 or better stars just call the program:
 
@@ -259,7 +292,6 @@ Look at the code in prompt_templates.py:
 ```
 TEMPLATE_MAP = {
     "base": template_base,
-    "cockroach": template_cockroach,
     "music": template_music,
     "gang": template_gang,
     "poet": template_poet,
