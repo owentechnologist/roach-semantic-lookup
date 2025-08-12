@@ -21,28 +21,24 @@ A running instance of CockroachDB version 25.2 or higher
 python simpleLLM_with_cache.py 
 python simpleLLM_with_cache.py <star_rating_filter> 
 python simpleLLM_with_cache.py 4 nostore
-python simpleLLM_with_cache.py 4 nostore poetry
+python simpleLLM_with_cache.py 4 nostore poet
 """
 
-# import driver for CRDB:
-import psycopg 
-# import to allow easy HTTP calls:
-import requests
-# import to allow manipulation of json and jsonpath navigation of response from LLM:
-import json, jsonpath_ng.ext as jsonpath
-#LLM related imports:
-from sentence_transformers import SentenceTransformer
 #general imports: 
-import time,uuid
+import time
 ### cmdline_utils==General Setup &
 
 # prompt templates for LLM:
 from prompt_templates import *
 # UI and Redis connection functions: ###
 from project_utils import *
-# rag text retrieval function:
-from rag_similarity_helper import *
 
+# bootstrap value, as we later check for the existence of user_input
+user_input = "BEGIN"
+
+# These strings are used to separate areas of command line output: 
+spacer = "\n**********************************************"
+uparrows = "\n ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ "
 
 def check_star_rating(pk):
     txt = input(f'\n{spacer}\nFrom 1 to 5 (where 5 is best) please rate that response: \t')
@@ -60,111 +56,29 @@ def update_star_rating(new_rating,pk):
         print(f"❌ Error during SQL UPDATE processing: {e}")
     return 'update function returning...'
 
-        
-def insert_llm_prompt_response(prompt_embedding,prompt_text,llm_response_text,prompt_template):
-    if isinstance(prompt_text, list):
-        prompt_text = ' '.join(str(x) for x in prompt_text)
-    llm_response_text = llm_response_text.strip()
-    new_pk=None
-    query = f'''INSERT INTO vdb.llm_history 
-        (prompt_embedding, prompt_text, llm_response, star_rating, prompt_template)
-        VALUES ('{prompt_embedding}', %s, %s, 3, %s) returning pk;'''
-    args = (prompt_text, llm_response_text, prompt_template)
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(query,args)
-                new_pk = cur.fetchone()[0] 
-    except Exception as e:
-        print(f"❌ Error during SQL INSERT processing: {e}")
-    return new_pk
+## this function displays the commandline menu to the user
+## it offers the ability to end the program by typing 'end'
+## it offers the ability to load augmentation text into the DB for RAG use
+def display_menu():
+    print(spacer)
+    print('\tType: END   and hit enter to exit the program...\n')
+    print(spacer)
+    print('\tType: LOAD   and hit enter to load augmentation text into the database...\n')
 
-# the query filters results using both the user-assigned star_rating_filter and 
-# the semantic similarity of the prompt to prior stored prompts
-# they must be threshold% semantically similar to be returned
-def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prompt_template):
-    print(f"query_using_vector_similarity - using {prompt_template}")
-    pk = None
-    threshold = 80
-    cached_response = ""
-    similarity_percent=80
-    query=f'''WITH target_vector AS (
-        SELECT '{incoming_prompt_vector}'::vector AS ipv
-    )
-    SELECT pk,
-    llm_response,
-    star_rating,
-    ROUND(
-        GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
-        2
-    ) AS "Percent Match"
-    FROM llm_history, target_vector
-    WHERE star_rating >= %s
-    AND prompt_template = %s
-    AND ROUND(
-        GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
-        2
-    ) > %s
-    ORDER BY "Percent Match" DESC
-    LIMIT 2;'''
-    
-    args = (star_rating_filter,prompt_template,threshold,)
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(query,args)
-                result = cur.fetchone()
-                if result:
-                    pk = result[0] #pk
-                    print("\nFound at least one prior similar prompt:\n")
-                    cached_response=result[1] # stored llm_response
-                    cached_response = cached_response.strip()
-                    similarity_percent=result[3]
-                    print(f"  - llm response:\n {cached_response}\n\nStar Rating for LLM Response: {result[2]}, Prompt Similarity Percentage: {similarity_percent}%")
-                else:
-                    print("No matching data.")
-    except Exception as e:
-        print(f"❌ Error during SQL Vector Similarity processing: {e}")
-    return {"pk": pk, "similarity_percent": similarity_percent, "cached_response": cached_response}
+    print('\tCommandline Instructions: \nType in your prompt/question as a single statement with no return characters... ')
+    print('(only hit enter for the purpose of submitting your question)')
+    print(spacer)
+    # get user input/prompt/question:
+    user_text = input('\n\tPlease provide a command or question (prompt):\t')
+    if user_text =="END" or user_text =="end":
+        print('\nYOU ENTERED --> \"END\" <-- QUITTING PROGRAM!!')
+        exit(0)
+    if user_text =="LOAD" or user_text =="load":
+        print('\nYOU ENTERED --> \"LOAD\" <-- loading text data to augment LLM responses...')
+        load_augmentation_text()
+        exit(0)
+    return (user_text)
 
-## This function is where we interact with the LLM 
-# - providing a prompt that guides the behavior as well as 
-# the question posed by the user:
-def ask_llm(user_prompt,config_dict):
-    template_func=config_dict.get("template_func")
-    temperature=config_dict.get("temperature")
-    rag=config_dict.get("rag")
-    print(f"ask_llm system state: rag = {rag} template_func = {template_func} temperature = {temperature}")
-    # a little prompt engineering is needed to get the answers in a usable format:
-    # HERE IS WHERE your specification of a different prompt_template function as the third argument to this program takes effect:
-    # example program startup where the template matching 'gang' is used:  (see code in prompt_templates.py)
-    # python3 simpleLLM_with_cache.py 6 nostore gang
-    if rag==True: #fetch additional information to include in prompt to LLM:
-        prompt_vector=create_embedding(user_prompt)
-        augmentation_text=rag_query_using_vector_similarity("public_customer_stories",prompt_vector)
-        wrapped_prompt=template_func(augmentation_text,user_prompt) 
-    else:
-        wrapped_prompt=template_func(user_prompt) 
-
-    llm_request_data = {"model": "tinyswallow-1.5b-instruct","response_format": {"type": "json"}, "messages": [{"role": "user", "content": f"{wrapped_prompt}"}], "temperature": temperature}
-    print(f"DEBUG: we are sending this to the LLM:\n {llm_request_data}")
-    headers =  {"Content-Type": "application/json"}    
-    myResponse = requests.post(llm_chat_url,json=llm_request_data,headers=headers )
-    decoded_json = myResponse.content.decode('utf-8')
-    json_data = json.loads(decoded_json)
-    print(f"\nDEBUG: {json_data.keys()}")    
-
-    # provide a default string for the reply in case LLM fails:
-    response_s = "Unknown (Not Answered)"
-
-    # Specify the path to be used within the JSON returned from the LLM: 
-    json_query = jsonpath.parse("choices[0].message.content")
-    # thought: how could we use jsonpath.parse to extract the count of tokens used?
-
-    ## extract the value located at the path we selected in our json_query
-    for match in json_query.find(json_data):
-        response_s=match.value
-    return response_s
 
 # UI loop: (if user responds with "END" - program ends)
 def main_routine():
@@ -204,6 +118,50 @@ def main_routine():
             print(f'\t{uparrows}\tElapsed Time spent querying LLM was: {llm_interrupt_time} seconds\n')
             if not None == pk:
                 check_star_rating(pk)
+
+# this value determines the accepted rating of a cached response to a prompt/question
+# it should be possible for management / users to rate the responses they get in order to
+# flag the bad ones and allow for new ones
+# Ratings are between 1 and 5 where 5 is the best score 
+# the default rating for cached responses is 3
+# pass in a larger value to cause queries to fail (as of now all rows have a star_rating of 3):
+star_rating_target = 3
+
+# this value determines which prompt template to send to the LLM - it can be overriden at runtime by the user as sys.argv[3]
+template_func=TEMPLATE_MAP.get("base")
+
+# this variable determines the temperature used by the LLM - a larger value give the model more freedom to be creative
+temperature = .45
+
+# this variable determines if the LLM gets fed additional data retrieved from the database ala the RAG pattern:
+# it gets set to True when the 'aug' (for augmented) template is specified 
+rag=False
+
+#print(f' sys.argv length == {len(sys.argv)}')
+if len(sys.argv) > 1:
+    star_rating_target=int(sys.argv[1])
+    print(f'You have set the star_rating filter to {star_rating_target}, lower-rated responses will be ignored')
+
+# this flag determines if the program writes new embeddings and text responses to the database or skips that functionality
+# you would set this to true in order to test interactions with the LLM and avoid poluting your database with nonsense 
+nostore = False
+if len(sys.argv) > 2:
+    nostore=True
+    print(f'You have set the nostore to {nostore}, if True, no new data will be stored in the database')
+
+# this argument specifies the name of a prompt to use when invoking the LLM 
+# example template_gang
+if len(sys.argv) > 3:
+    template_key=sys.argv[3].strip()
+    template_result=configure_temperature_and_template(template_key=template_key)
+    template_func=template_result.get("template_func")
+    rag=template_result.get("rag")
+    if rag==True:
+        sample_prompt = template_func(augmentation_text="This text augments the prompt sent to the LLM.",user_prompt="this is the original prompt")
+    else:
+        sample_prompt = template_func("this is the original prompt")
+    print(f'Here is the prompt to be used: \n{sample_prompt}')
+
 
 # --- Example usage ---
 if __name__ == "__main__":

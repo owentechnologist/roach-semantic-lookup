@@ -1,5 +1,5 @@
 
-## This example showcases a pattern known as semantic caching. LOOK AT THE elapsed TIME DIFFERENCE (all services are running on the same laptop)
+This example showcases a pattern known as semantic caching. LOOK AT THE elapsed TIME DIFFERENCE (all services are running on the same laptop)
 
 
 >[!NOTE] 
@@ -16,7 +16,7 @@
 ![semantic caching](./resources/llm_fromdbsave.png)
 
 
-## It also highlights the impact of prompt engineering and encourages you to adjust the prompt template used as well as experiment with RAG (Retrieval Augmented Generative AI). (Scan this document for the full set of startup options)
+It also highlights the impact of prompt engineering and encourages you to adjust the prompt template used as well as experiment with RAG (Retrieval Augmented Generative AI). (Scan this document for the full set of startup options)
 
 
 
@@ -71,14 +71,14 @@ end workflow
 ![Query DB fail](./resources/semantic_cache_miss.png)
 
 
-# A simple example of RAG Retrieval Augmented Generative AI is also part of this project
+A simple example of RAG Retrieval Augmented Generative AI is also part of this project
 
 ![RAG WORKFLOW](./resources/mermaid_rag.png)
 
 
-# The 'sql' template points us towards another use case that is becoming popular: the use of agentic AI where an LLM generates code dynamically (sometimes executing it as well). <em>NB: As of 2025-08-08 the SQL is generated and revealed as a response, but not executed.</em>
+The 'sql' template points us towards another use case that is becoming popular: the use of agentic AI where an LLM generates code dynamically (sometimes executing it as well). <em>NB: As of 2025-08-08 the SQL is generated and revealed as a response, but not executed.</em>
 
-## Let's consider an example of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
+Let's consider an example of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
 
 ```
 +-----+----------+----------+--------+----------+
@@ -94,7 +94,7 @@ Imagine a table containing all the animals in a zoo with their names, species, o
 
 With the correct template and additional workflow, we can dynamically query such a table based on a user's natural language question like this one:
 
-### "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
+"I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
 
 You can solve for this by manipulating the prompt sent to an LLM so that it dynamically generates a SQL query capable of retrieving the answer from a traditional database.  (some function then, would execute the generated SQL query and either pass the results to the LLM for inclusion in a friendly response, or pass the results directly back to the calling program)
 

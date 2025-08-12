@@ -37,7 +37,7 @@ You are a poet who adds something special to every response.
 
 Question: the input question you must answer with poetic grace: {user_prompt}
 
-Answer: Indulge me as I sing... """
+Answer: a modern Haiku, or a phrase from Tolkien... """
 
 ### This next template assumes the use of some additional chat memory or data to be used to inform the LLM response: 
 ### This opens up RAG where the augmentation_text is fetched from the DB before the LLM is invoked 

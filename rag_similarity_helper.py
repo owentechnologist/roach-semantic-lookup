@@ -1,4 +1,6 @@
 from project_utils import *
+# import hard coded db config and localAI LLM url:
+from connection_stuff import get_connection
 
 #rag_similarity_helper.py
 ## This function enables: 
@@ -22,7 +24,7 @@ def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
         2
     ) AS "Percent Match"
     FROM llm_enrichment, target_vector
-    WHERE subject_matter = %s or subject_matter = 'public_information'
+    WHERE subject_matter = %s or subject_matter like %s
     AND ROUND(
         GREATEST(0, LEAST(1, 1 - cosine_distance(chunk_embedding, ipv))) * 100,
         2
@@ -30,8 +32,8 @@ def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
     ORDER BY "Percent Match" DESC
     LIMIT 2;'''
     
-    args = (subject_matter,threshold,)
-    #print(f'\n***DEBUG***\ncalling DB: {subject_matter}, {threshold} : {query} \n')
+    args = (subject_matter,'public%',threshold,)
+    print(f'\n***DEBUG***\ncalling DB: {subject_matter}, {threshold} : {query} \n')
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
