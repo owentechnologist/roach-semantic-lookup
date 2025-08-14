@@ -185,7 +185,11 @@ python3 bottlewebinterface.py
 
 try asking:  " who is Spencer? "  using different prompt templates
 
-### (this behaves in a more dynamic but similar fashion to the basic prompt engineering caused by selecting poet or gang or music, etc) to make this possible you must first load searchable embeddings and text into the database. <em>This can be accomplished using the command line program 'simpleLLM_with_cache.py and issuing the command 'load' at the prompt. </em> 
+### (this behaves in a more dynamic but similar fashion to the basic prompt engineering caused by selecting poet or gang or music, etc) to make this possible you must first load searchable embeddings and text into the database. <em>This can be accomplished using the command line program 'load_rag_data.py' </em> 
+
+```
+python3 load_rag_data.py
+```
 
 ### With the above command issued, the data in the ragdata.json file will be loaded into the database and will allow for some simple RAG examples to work
 

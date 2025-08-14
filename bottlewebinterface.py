@@ -48,20 +48,24 @@ def default():
 
 @route('/menu', method='GET')
 def menu():
-    prompts= ''
+    prompts = f'''<select name="choice" value="base">'''
     for key in TEMPLATE_MAP:
-        prompts+=key
-        prompts+='  |  '
+        prompts+= f'<option value="{key}">{key}</option>\n'
+    prompts+='</select>'
     html=f'''
 <h2><p>Choose a prompt_template or RAG</p>
 <p>Confirm if you want to save the resulting response, then enter your question or prompt to be processed...</p></h2>
-<h1>{prompts}</h1>
 <form action="/menu" method="post">
     <p>
-    prompt_option: <input name="choice" type="text" value="base"/>
+    {prompts}
     </p>
     <p>
-    save_llm_response: <input name="save" type="text" value="False" />
+    save_llm_response (store this exchange for faster retrieval): </p>
+    <p>
+    <input type="radio" name="save" value="False" checked />
+    <label for="False">False</label><br>
+    <input type="radio" name="save" value="True" />
+    <label for="True">True</label><br>
     </p>
     <p><textarea id="large_text" name="user_input" rows="10" cols="50" >Who is Spencer?</textarea></p>
     <input value="Submit_Form" type="submit" />
@@ -82,6 +86,7 @@ def do_menu():
     template_func=config_dict.get("template_func")
     start_time=time.perf_counter()
     llm_interrupt_time=0
+    #check for stored response that matches prompt and template:
     response_dict = query_using_vector_similarity(embed,star_rating_target,template_func.__name__)
     
     llm_response = f"Similarity_Percentage = {response_dict.get("similarity_percent")}<p/>"+str(response_dict.get("cached_response"))
@@ -108,9 +113,6 @@ def do_menu():
     '''
     
     return page_output
-
-def do_prompt(choice):
-    return
 
 
 if __name__ == '__main__':

@@ -25,7 +25,7 @@ ANSWER: Let us answer fully..."""
 
 def template_gang(user_prompt):
     return f"""
-Remember: You are a gangster from the 1940s. The current date is 1951. You robbed 99 banks across America.  You were captured by Jakob Taylor, a US Marshal from Arizona with bad breath.
+Remember: You are a gangster from the 1940s named Spencer (Shotgun) Smith. The current date is 1951. You robbed 99 banks across America.  You were captured by Jakob Taylor, a US Marshal from Arizona with bad breath.
 
 Question: the input question you must answer while bragging about your crimes: {user_prompt}
 

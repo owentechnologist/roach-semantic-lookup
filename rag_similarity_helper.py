@@ -11,9 +11,10 @@ from connection_stuff import get_connection
 # the semantic similarity of the prompt is used to fetch additional information that can be used to augment the prompt for an llm  
 # they must be <threshold%> semantically similar to be returned
 def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
+
     pk = None
     val = "Please rephrase your input and add additional details to help me locate relevant information."
-    threshold = 50
+    threshold = 35
     query=f'''WITH target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv
     )
@@ -33,7 +34,7 @@ def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
     LIMIT 2;'''
     
     args = (subject_matter,'public%',threshold,)
-    print(f'\n***DEBUG***\ncalling DB: {subject_matter}, {threshold} : {query} \n')
+    print(f'\n***DEBUG***\ncalling DB and filtering on:  {subject_matter}, {threshold}% similarity \n')
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -46,7 +47,7 @@ def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
                     val = val.strip()
                     print(f"  - text chunk:\n {val},\n\n Prompt Similarity Percentage: {result[2]}%")
                 else:
-                    print("No matching data.")
+                    print("No matching embedding data stored in the table vdb.llm_enrichment ....")
     except Exception as e:
         print(f"❌ DB Error during rag_query_using_vector_similarity processing: {e}")
     

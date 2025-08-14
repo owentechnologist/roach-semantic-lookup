@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS vdb.llm_history(
 CREATE TABLE IF NOT EXISTS vdb.llm_enrichment(
    pk UUID PRIMARY KEY DEFAULT gen_random_uuid(),
    subject_matter string,
+   similarity_text string,
    chunk_embedding VECTOR(768),
    text_chunk string,
    VECTOR INDEX (subject_matter, chunk_embedding vector_cosine_ops) -- non-default cosine nearest neighbor support (default is L2 for KNN)

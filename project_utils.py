@@ -45,8 +45,8 @@ def configure_temperature_and_template(template_key):
 '''
 {
   "text_chunks":[
-    {"subject_matter": "public_something", "text_chunk":"the text that informs the LLM for this instance of the subject_matter"},
-    {"subject_matter": "private_something", "text_chunk":"different text that informs the LLM for this other instance of some subject_matter"}
+    {"subject_matter": "public_something","content_summary_for_prompt_similarity": "This is text", "text_chunk":"the text that informs the LLM for this instance of the subject_matter"},
+    {"subject_matter": "private_something", "content_summary_for_prompt_similarity": "This is text", "text_chunk":"different text that informs the LLM for this other instance of some subject_matter"}
   ]
 }
 '''
@@ -55,28 +55,33 @@ def read_json_file():
         data = json.load(file)
         # Initialize lists to store the extracted data
     subject_matters = []
+    similarity_texts = []
     text_chunks = []
     # Access the list of dictionaries using the key "text_chunks"
     for entry in data.get("text_chunks", []):        
         # Extract the values and append them to the respective lists
+        similarity_texts.append(entry.get('content_summary_for_prompt_similarity', ''))
         subject_matters.append(entry.get('subject_matter', ''))
         text_chunks.append(entry.get('text_chunk', ''))    
         
-    return subject_matters, text_chunks
+    return subject_matters, similarity_texts, text_chunks
 
 # here we create the embeddings and load the data from the json file into the database: 
-def insert_text_chunk(text_embedding,subject_matter,text_chunk):
+def insert_text_chunk(text_embedding,subject_matter,similarity_text,text_chunk):
     if isinstance(subject_matter, list):
         subject_matter = ' '.join(str(x) for x in subject_matter)
     subject_matter = subject_matter.strip()
     if isinstance(text_chunk, list):
         text_chunk = ' '.join(str(x) for x in text_chunk)
+    if isinstance(similarity_text, list):
+        similarity_text = ' '.join(str(x) for x in similarity_text)
     text_chunk = text_chunk.strip()
+    similarity_text = similarity_text.strip()
     new_pk=None
     query = f'''INSERT INTO vdb.llm_enrichment 
-        (chunk_embedding, subject_matter, text_chunk)
-        VALUES ('{text_embedding}', %s, %s) returning pk;'''
-    args = (subject_matter, text_chunk)
+        (chunk_embedding, subject_matter, similarity_text,text_chunk)
+        VALUES ('{text_embedding}', %s, %s, %s) returning pk;'''
+    args = (subject_matter, similarity_text,text_chunk)
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
@@ -92,11 +97,12 @@ def insert_text_chunk(text_embedding,subject_matter,text_chunk):
 # to prevent duplicates this simple sql can be used:
 #  delete from vdb.llm_enrichment where 1=1
 def load_augmentation_text():
-    subject_matters, text_chunks = read_json_file()
+    subject_matters, similarity_texts, text_chunks = read_json_file()
     for i in range(len(subject_matters)):
-        some_text=text_chunks[i]
-        some_embedding = create_embedding(some_text)
-        insert_text_chunk(subject_matter=subject_matters[i],text_chunk=some_text,text_embedding=some_embedding)
+        similarity_text=similarity_texts[i]
+        search_embedding = create_embedding(similarity_text)
+        llm_info_text=text_chunks[i]
+        insert_text_chunk(subject_matter=subject_matters[i],similarity_text=similarity_text,text_chunk=llm_info_text,text_embedding=search_embedding)
     return 
 
 # a helper function that takes in a string and returns a vector embedding suitable for 
@@ -179,7 +185,7 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prom
                     similarity_percent=result[3]
                     print(f"  - llm response:\n {cached_response}\n\nStar Rating for LLM Response: {result[2]}, Prompt Similarity Percentage: {similarity_percent}%")
                 else:
-                    print("No matching data.")
+                    print("No similar-enough prior stored llm_Response data in the table vdb.llm_history.")
     except Exception as e:
         print(f"❌ Error during SQL Vector Similarity processing: {e}")
     return {"pk": pk, "similarity_percent": similarity_percent, "cached_response": cached_response}
