@@ -45,16 +45,6 @@ def check_star_rating(pk):
     star_rating=int(txt)
     update_star_rating(star_rating,pk)
 
-def update_star_rating(new_rating,pk):
-    query = '''update vdb.llm_history SET star_rating=%s where pk=%s;'''
-    args = (new_rating, pk)
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(query,args)
-    except Exception as e:
-        print(f"❌ Error during SQL UPDATE processing: {e}")
-    return 'update function returning...'
 
 ## this function displays the commandline menu to the user
 ## it offers the ability to end the program by typing 'end'

@@ -54,19 +54,11 @@ def menu():
     prompts+='</select>'
     html=f'''
 <h2><p>Choose a prompt_template or RAG</p>
-<p>Confirm if you want to save the resulting response, then enter your question or prompt to be processed...</p></h2>
 <form action="/menu" method="post">
     <p>
     {prompts}
     </p>
-    <p>
-    save_llm_response (store this exchange for faster retrieval): </p>
-    <p>
-    <input type="radio" name="save" value="False" checked />
-    <label for="False">False</label><br>
-    <input type="radio" name="save" value="True" />
-    <label for="True">True</label><br>
-    </p>
+    <h2><p>Enter your question or prompt to be processed...</p></h2>
     <p><textarea id="large_text" name="user_input" rows="10" cols="50" >Who is Spencer?</textarea></p>
     <input value="Submit_Form" type="submit" />
 </form>
@@ -79,9 +71,10 @@ def do_menu():
     duration=0
     prompt_template = request.forms.choice
     user_input = request.forms.user_input
-    save = request.forms.save
-    page_output = f''' you selected: {prompt_template} with <p>{user_input}</p> and <p>{save}'''
+    page_output = f''' you selected: {prompt_template} with <p>{user_input}</p>'''
     embed = create_embedding(user_input)
+    #print(f'\n\nCREATING LLM_EXCHANGE --> DEBUG: {embed}\n\n')
+
     config_dict=configure_temperature_and_template(prompt_template)
     template_func=config_dict.get("template_func")
     start_time=time.perf_counter()
@@ -94,9 +87,6 @@ def do_menu():
         llm_interrupt_time=time.perf_counter()
         llm_response = ask_llm(user_input,config_dict) 
         llm_interrupt_time=time.perf_counter()-llm_interrupt_time
-        if save=="True":
-            #print('before DB insert...')
-            pk = insert_llm_prompt_response(embed,user_input,llm_response,template_func.__name__)
         duration=(time.perf_counter()-(start_time+llm_interrupt_time))*1
         print(f'\t{uparrows}\tElapsed Time spent querying database was: {duration} seconds\n')
         print(f'\t{uparrows}\tElapsed Time spent querying LLM was: {llm_interrupt_time} seconds\n')
@@ -109,11 +99,56 @@ def do_menu():
                      </ul>
                      </h4>
                      </p>
-                     <p/>{main_menu_form}
-    '''
-    
+
+  <form action="/store_llm_exchange" method="post">
+    <p><hr />
+    <b>Choose True to store the llm response & rating (for faster response to similar prompts): </b>
+    <p>
+    <input type="hidden" name="embed" value="{embed}">
+    <input type="hidden" name="user_input" value="{user_input}">
+    <input type="hidden" name="llm_response" value="{llm_response}">
+    <input type="hidden" name="template_func_name" value="{template_func.__name__}">
+    <input type="radio" name="store" value="False" checked />
+    <label for="False">False</label><br>
+    <input type="radio" name="store" value="True" />
+    <label for="True">True</label><br>
+    </p>
+  <input type="radio" id="star-1" name="stars" value="1" />
+  <label for="star-1">1 Star</label>
+  <input type="radio" id="star-2" name="stars" value="2" />
+  <label for="star-2">2 Stars</label>
+  <input type="radio" id="star-3" name="stars" value="3" checked />
+  <label for="star-3">3 Stars</label>
+  <input type="radio" id="star-4" name="stars" value="4" />
+  <label for="star-4">4 Stars</label>
+  <input type="radio" id="star-5" name="stars" value="5" />
+  <label for="star-5">5 Stars</label>
+  <p>
+  <input value="Save Prompt & Response" type="submit" />
+  </p>
+  </form>
+<p/><hr /><h2>SKIP SAVE/STORE</h2>{main_menu_form}</hr />
+    ''' 
     return page_output
 
+@route('/store_llm_exchange', method='POST')
+def do_store_llm_exchange():
+    #    embed,user_input,llm_response,template_func.__name__
+    embed=request.forms.embed
+    print(f'\n\nSTORING LLM_EXCHANGE --> DEBUG: {embed}\n\n')
+    user_input = request.forms.user_input
+    llm_response = request.forms.llm_response
+    template_func_name = request.forms.template_func_name
+    stars = request.forms.stars
+    save = request.forms.store
+    print(f'\n\nSTORING LLM_EXCHANGE -->\n USER_INPUT: {user_input}\nLLM_RESPONSE: {llm_response}\n\nTemplate_func_name: {template_func_name}\n\n')
+    page_output = f''' you rated the response: {stars} stars and store == {save}'''
+    if save=="True":
+        #print('before DB insert...')
+        pk = insert_llm_prompt_response(embed,user_input,llm_response,template_func_name)
+        update_star_rating(pk=pk,new_rating=stars)
+    page_output+= f'''<p><h3><hr />{main_menu_form}</h3></p>'''   
+    return page_output
 
 if __name__ == '__main__':
     run(host='localhost', port=2020, debug=True)

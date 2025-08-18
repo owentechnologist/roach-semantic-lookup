@@ -122,6 +122,18 @@ def create_embedding(some_text):
     prompt_embedding = prompt_ndarr.tolist()
     return prompt_embedding
 
+def update_star_rating(new_rating,pk):
+    if type(new_rating) != int:
+        new_rating=int(new_rating.strip())
+    query = '''update vdb.llm_history SET star_rating=%s where pk=%s;'''
+    args = (new_rating, pk)
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(query,args)
+    except Exception as e:
+        print(f"❌ Error during SQL UPDATE processing: {e}")
+    return 'update function returning...'
 
         
 def insert_llm_prompt_response(prompt_embedding,prompt_text,llm_response_text,prompt_template):

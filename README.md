@@ -195,7 +195,11 @@ python3 load_rag_data.py
 
 ### when you restart the program, the database will have some specific information stored that will provide details for related prompts 
 
-# note that the rag option will specifically allow for retrieving context and information dynamically (edit the ragdata.json file to add additional data)
+<b><em>The schema provided hints at the need to provide guardrails and pointers to externally stored information, to keep it simple, this example project does not include such external resources and all included data is classified as publicly available</em></b>
+
+![LLM / cache / simplified enrichment data ](./resources/llm_example_tables.png)
+
+# note that the rag option will specifically allow for retrieving context and information dynamically (You can edit the ragdata.json file to add additional data)
 
 >[!NOTE] 
 > If you haven't already: try asking:  " who is Spencer? "  using rag
