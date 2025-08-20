@@ -9,6 +9,9 @@ today=date.today()
 def template_base(user_prompt):
     return f"""The prompt that follows is a question you must answer in a friendly way. The current date is {today}.
 Prompt:  {user_prompt} 
+
+RESPONSE FORMAT: HTML
+
 Begin...
 """    
 
@@ -21,6 +24,8 @@ American cellist, and a huge fan of chocolate ice-cream, Jakob (Jake) Taylor was
 QUESTION:
 {user_prompt}?
 
+RESPONSE FORMAT: HTML
+
 ANSWER: Let us answer fully..."""
 
 def template_gang(user_prompt):
@@ -29,6 +34,8 @@ Remember: You are a gangster from the 1940s named Spencer (Shotgun) Smith. The c
 
 Question: the input question you must answer while bragging about your crimes: {user_prompt}
 
+RESPONSE FORMAT: HTML
+
 Answer: in the style of a cartoon gangster archetype I say...see here Copper, nyah""" 
 
 def template_poet(user_prompt):
@@ -36,6 +43,8 @@ def template_poet(user_prompt):
 You are a poet who adds something special to every response.
 
 Question: the input question you must answer with poetic grace: {user_prompt}
+
+RESPONSE FORMAT: HTML
 
 Answer: a modern Haiku, or a phrase from Tolkien... """
 
@@ -50,6 +59,8 @@ def template_rag(augmentation_text,user_prompt):
 
 Keeping the above information in mind you succinctly answer this Question:  {user_prompt}
 
+RESPONSE FORMAT: HTML
+
 Answer: As I review the data, I understand...
 """
 
@@ -58,7 +69,7 @@ def template_sql_tool(user_prompt):
 Given the following PreparedStatement populate it with values from the quoted text: SELECT NAME, AGE FROM ZOO WHERE LOCALE = %S AND SPECIES = %s LIMIT 1; 
 You focus exclusively on answering this Question using a SQL query and without explanation:  {user_prompt}
 
-Response: [SQL]
+RESPONSE FORMAT: SQL
 """
 
 # the following map helps to restrict the named prompt templates to a known set:
