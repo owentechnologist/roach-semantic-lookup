@@ -164,7 +164,7 @@ pip3 install -r requirements.txt
 
 5. SEVERAL THINGS ARE HARD CODED IN THIS EXAMPLE! (for example the use of localhost for both crdb and localAI connections)
 
-Edit your local copy of the code in project_utils.py as you prefer/need for the connection settings.  
+Edit your local copy of the code in connection_stuff.py as you prefer/need for the connection settings.  
 
 # A simple web interface is available for use and is started using:
 
