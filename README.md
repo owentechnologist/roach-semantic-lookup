@@ -195,7 +195,7 @@ python3 load_rag_data.py
 
 ### when you restart the program, the database will have some specific information stored that will provide details for related prompts 
 
-<b><em>The schema provided hints at the need to provide guardrails and pointers to externally stored information, to keep it simple, this example project does not include such external resources and all included data is classified as publicly available</em></b>
+<b><em>The db schema hints at the need to provide guardrails and pointers to externally stored information, to keep it simple, this example project does not include such external resources and all included data is classified as publicly available</em></b>
 
 ![LLM / cache / simplified enrichment data ](./resources/llm_example_tables.png)
 
@@ -203,7 +203,7 @@ python3 load_rag_data.py
 
 >[!NOTE] 
 > If you haven't already: try asking:  " who is Spencer? "  using rag
-
+> Then Save the response (assuming it seems useful)
 <hr>
 
 * You could then provide a prompt like:  
@@ -212,10 +212,22 @@ python3 load_rag_data.py
 tell me about Spencer
 ```
 
-* or:
+* or you could test different rag-enriched subjects:
 
 ```
-what database did shipt use before they switched to cockroachDB?
+What database did Shipt use before they switched to cockroachDB?
+```
+
+or:
+
+```
+Which company provides a fruit in Florida that is high in Vitamin C?
+```
+
+and, if you save the response this query will likely get a hit:
+
+```
+What Florida fruit is high in Vitamin C?
 ```
 
 ## if the augmentation data is loaded, you should get a rich reply that hones in on the provided data

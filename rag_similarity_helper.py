@@ -16,8 +16,8 @@ from connection_stuff import get_connection
 def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
     classification_description='public' #ALERT! hard coded, naive example
     pk = None
-    val = "Please rephrase your input and add additional details to help me locate relevant information."
-    threshold = 45.0
+    val = "Suggest a web search to get the missing information' <h2><em>..."
+    threshold = 40.0
     query=f'''WITH 
     target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv

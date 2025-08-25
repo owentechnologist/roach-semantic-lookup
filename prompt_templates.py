@@ -49,9 +49,9 @@ def template_rag(augmentation_text,user_prompt):
 
 Data: {augmentation_text}
 
-Keep the above information in mind as you succinctly respond to the following:  {user_prompt}
+As indicated above, respond to the following:  {user_prompt}
 
-<Begin>...
+<response>...
 """
 
 def template_sql_tool(user_prompt):
