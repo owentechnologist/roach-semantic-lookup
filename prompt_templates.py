@@ -10,13 +10,11 @@ def template_base(user_prompt):
     return f"""The prompt that follows is a question you must answer in a friendly way. The current date is {today}.
 Prompt:  {user_prompt} 
 
-RESPONSE FORMAT: HTML
-
-Begin...
+<Begin>...
 """    
 
 def template_music(user_prompt):
-    return f"""You are not a musician or Cellist. Use the information below as relevant context to help answer the user question. Don't blindly make things up. If you don't know the answer, just say that you don't know, don't try to make up an answer. Keep the answer as concise as possible. The current date is {today}.
+    return f"""Be concise. You are a music historian. Use the information below as the primary data to help answer the user question. Don't blindly make things up. Don't try to make up an answer. The current date is {today}.
 
 INFORMATION:
 American cellist, and a huge fan of chocolate ice-cream, Jakob (Jake) Taylor was born in 1997. He graduated in 2023 with his Masters of Musical Arts degree from the Yale School of Music under the tutelage of Paul Watkins, cellist of the Emerson String Quartet. Born in New York City, Taylor began playing the cello at the age of three. His career as a soloist and chamber musician has led him around the globe with engagements in the United States, Cuba, and the United Kingdom and to perform in venues such as Carnegie Hall, Alice Tully Hall, Stude Concert Hall, Bargemusic, and Jordan Hall. Taylor received his Master of Music from Rice University’s Shepherd School of Music, where he studied with Desmond Hoebig, and also studied at the New England Conservatory and the Juilliard School. Taylor is the recipient of the Harvey R. Russell Scholarship and Irving S. Gilmore Fellowship at Yale University, where he recently performed Prokofiev’s Sinfonia Concertante with the Yale Philharmonia under the baton of Leonard Slatkin as the winner of the 2022 Yale School of Music’s Woolsey Hall Concerto Competition. He is also the winner of the 2020 Rice University Shepherd School of Music Concerto Competition. Taylor has spent his summers performing at the Taos School of Music, Music Academy of the West, Music@Menlo, and Bowdoin International music festivals, among others.
@@ -24,9 +22,8 @@ American cellist, and a huge fan of chocolate ice-cream, Jakob (Jake) Taylor was
 QUESTION:
 {user_prompt}?
 
-RESPONSE FORMAT: HTML
 
-ANSWER: Let us answer fully..."""
+<Begin>..."""
 
 def template_gang(user_prompt):
     return f"""
@@ -34,9 +31,7 @@ Remember: You are a gangster from the 1940s named Spencer (Shotgun) Smith. The c
 
 Question: the input question you must answer while bragging about your crimes: {user_prompt}
 
-RESPONSE FORMAT: HTML
-
-Answer: in the style of a cartoon gangster archetype I say...see here Copper, nyah""" 
+<Begin>...Answer: in the style of a cartoon gangster archetype I say...see here Copper, nyah""" 
 
 def template_poet(user_prompt):
     return f"""
@@ -44,24 +39,19 @@ You are a poet who adds something special to every response.
 
 Question: the input question you must answer with poetic grace: {user_prompt}
 
-RESPONSE FORMAT: HTML
-
-Answer: a modern Haiku, or a phrase from Tolkien... """
+<Begin>...Answer: a modern Haiku, or a phrase from Tolkien... """
 
 ### This next template assumes the use of some additional chat memory or data to be used to inform the LLM response: 
 ### This opens up RAG where the augmentation_text is fetched from the DB before the LLM is invoked 
 ### Note that nothing prevents RAG results from also being cached - speeding up the experience
-#   As of 2025-08-01 not yet implemented in this example
 def template_rag(augmentation_text,user_prompt):
     return f"""Use the data provided below in your reply when it can inform your answer.
 
-{augmentation_text}
+Data: {augmentation_text}
 
-Keeping the above information in mind you succinctly answer this Question:  {user_prompt}
+Keep the above information in mind as you succinctly respond to the following:  {user_prompt}
 
-RESPONSE FORMAT: HTML
-
-Answer: As I review the data, I understand...
+<Begin>...
 """
 
 def template_sql_tool(user_prompt):
@@ -69,7 +59,7 @@ def template_sql_tool(user_prompt):
 Given the following PreparedStatement populate it with values from the quoted text: SELECT NAME, AGE FROM ZOO WHERE LOCALE = %S AND SPECIES = %s LIMIT 1; 
 You focus exclusively on answering this Question using a SQL query and without explanation:  {user_prompt}
 
-RESPONSE FORMAT: SQL
+FORMAT=SQL
 """
 
 # the following map helps to restrict the named prompt templates to a known set:

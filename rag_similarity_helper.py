@@ -17,7 +17,7 @@ def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
     classification_description='public' #ALERT! hard coded, naive example
     pk = None
     val = "Please rephrase your input and add additional details to help me locate relevant information."
-    threshold = 35
+    threshold = 45.0
     query=f'''WITH 
     target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv
@@ -25,18 +25,16 @@ def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
     visibility_id AS (
         SELECT pk FROM visibility_classification WHERE classification_description=%s
     )
-    SELECT pk,
-    text_chunk,
+    SELECT le.pk,
+    le.text_chunk,
     ROUND(
-        GREATEST(0, LEAST(1, 1 - cosine_distance(chunk_embedding, ipv))) * 100,
+        GREATEST(0, LEAST(1, 1 - cosine_distance(le.chunk_embedding, ipv))) * 100,
         2
     ) AS "Percent Match"
-    FROM llm_enrichment, target_vector
-    WHERE subject_matter = %s or subject_matter like %s
-    AND ROUND(
-        GREATEST(0, LEAST(1, 1 - cosine_distance(chunk_embedding, ipv))) * 100,
-        2
-    ) > %s
+    FROM llm_enrichment le, target_vector tv, visibility_id vi
+    WHERE vi.pk IS NOT NULL 
+    AND (le.subject_matter = %s OR le.subject_matter like %s)
+    AND (GREATEST(0, LEAST(1, 1 - cosine_distance(le.chunk_embedding, ipv))) * 100) > %s
     ORDER BY "Percent Match" DESC
     LIMIT 2;'''
     
