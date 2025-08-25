@@ -224,10 +224,10 @@ or:
 Which company provides a fruit in Florida that is high in Vitamin C?
 ```
 
-and, if you save the response this query will likely get a hit:
+or:
 
 ```
-What Florida fruit is high in Vitamin C?
+Who created Gimp?
 ```
 
 ## if the augmentation data is loaded, you should get a rich reply that hones in on the provided data
