@@ -18,7 +18,7 @@ def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
     pk = None
     val = "Suggest a web search to get the missing information' <h2><em>..."
     threshold = 40.0
-    query=f'''WITH 
+    oldquery=f'''WITH 
     target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv
     ),
@@ -37,7 +37,28 @@ def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
     AND (GREATEST(0, LEAST(1, 1 - cosine_distance(le.chunk_embedding, ipv))) * 100) > %s
     ORDER BY "Percent Match" DESC
     LIMIT 2;'''
-    
+    # oldQuery above uses function call cosine_distance 
+    # query below uses cosine distance operator <=> (only available CRDB >= 25.3)
+    query=f'''WITH 
+    target_vector AS (
+        SELECT '{incoming_prompt_vector}'::vector AS ipv
+    ),
+    visibility_id AS (
+        SELECT pk FROM visibility_classification WHERE classification_description=%s
+    )
+    SELECT le.pk,
+    le.text_chunk,
+    ROUND(
+        GREATEST(0, LEAST(1, 1 - (le.chunk_embedding <=> ipv))) * 100,
+        2
+    ) AS "Percent Match"
+    FROM llm_enrichment le, target_vector tv, visibility_id vi
+    WHERE vi.pk IS NOT NULL 
+    AND (le.subject_matter = %s OR le.subject_matter like %s)
+    AND (GREATEST(0, LEAST(1, 1 - (le.chunk_embedding <=> ipv))) * 100) > %s
+    ORDER BY "Percent Match" DESC
+    LIMIT 2;'''
+
     args = (classification_description,subject_matter,'public%',threshold,)
     print(f'\n***DEBUG***\ncalling DB and filtering on: {classification_description}, {subject_matter}, {threshold}% similarity \n')
     try:

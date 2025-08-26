@@ -88,9 +88,11 @@ def do_menu():
         llm_response = ask_llm(user_input,config_dict) 
         llm_interrupt_time=time.perf_counter()-llm_interrupt_time
     duration=(time.perf_counter()-(start_time+llm_interrupt_time))*1
+    llm_response=llm_response.replace('.', '.<br/>')
+    llm_response=llm_response.replace('*', '')
     print(f'\t{uparrows}\tElapsed Time spent querying database was: {duration} seconds\n')
     print(f'\t{uparrows}\tElapsed Time spent querying LLM was: {llm_interrupt_time} seconds\n')
-    page_output+=f'''<p><h3><hr/>Here is the response from your prompt: <p/><hr/><p/>{llm_response.replace('.', '.<br/>')}</h3></p>
+    page_output+=f'''<p><h3><hr/>Here is the response from your prompt: <p/><hr/><p/>{llm_response}</h3></p>
                      <p>
                      <h4>
                      <ul>

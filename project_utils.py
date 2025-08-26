@@ -163,7 +163,8 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prom
     threshold = 80
     cached_response = ""
     similarity_percent=80
-    query=f'''WITH target_vector AS (
+    
+    oldQuery=f'''WITH target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv
     )
     SELECT pk,
@@ -180,6 +181,24 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prom
         GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
         2
     ) > %s
+    ORDER BY "Percent Match" DESC
+    LIMIT 2;'''
+    # oldQuery above uses function call: cosine_distance 
+    # query below uses cosine distance operator <=> (only available CRDB >= 25.3)
+    query=f'''WITH target_vector AS (
+        SELECT '{incoming_prompt_vector}'::vector AS ipv
+    )
+    SELECT pk,
+    llm_response,
+    star_rating,
+    ROUND(
+        GREATEST(0, LEAST(1, 1 - (prompt_embedding <=> ipv))) * 100,
+        2
+    ) AS "Percent Match"
+    FROM llm_history, target_vector
+    WHERE star_rating >= %s
+    AND prompt_template = %s
+    AND GREATEST(0, LEAST(1, 1 - (prompt_embedding <=> ipv))) * 100 > %s
     ORDER BY "Percent Match" DESC
     LIMIT 2;'''
     

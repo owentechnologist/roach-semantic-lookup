@@ -181,9 +181,9 @@ python3 bottlewebinterface.py
 
 ![LLM / cache / rag web interface](./resources/llm_webform1.png)
 
-# play with different prompt templates by typing them in the first field then watch for the different responses generated
+# play with different prompt templates by selecting them in the first field then watch for the different responses generated
 
-try asking:  " who is Spencer? "  using different prompt templates
+try asking:  "Tell me about hotdogs"  using different prompt templates
 
 ### (this behaves in a more dynamic but similar fashion to the basic prompt engineering caused by selecting poet or gang or music, etc) to make this possible you must first load searchable embeddings and text into the database. <em>This can be accomplished using the command line program 'load_rag_data.py' </em> 
 

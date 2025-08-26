@@ -7,7 +7,7 @@ today=date.today()
 
 # a little prompt engineering is needed to get the answers in a usable format:
 def template_base(user_prompt):
-    return f"""The prompt that follows is a question you must answer in a friendly way. The current date is {today}.
+    return f"""You only use english. The prompt that follows is a question you must answer in a friendly way. The current date is {today}. 
 Prompt:  {user_prompt} 
 
 <Begin>...
