@@ -78,10 +78,7 @@ WITH target_vector AS (
     FROM llm_history, target_vector
     WHERE star_rating >= %s
     AND prompt_template = %s
-    AND ROUND(
-        GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
-        2
-    ) > 82
+    AND GREATEST(0, LEAST(1, 1 - (prompt_embedding <=> ipv))) * 100 > 82
     ORDER BY "Percent Match" DESC
     LIMIT 2;
 ```
@@ -232,7 +229,68 @@ Who created Gimp?
 
 ## if the augmentation data is loaded, you should get a rich reply that hones in on the provided data
 
-<hr/><p/><hr/>
+<hr/><p /><hr/>
+
+## You can try your hand at more prompt engineering by playing with the alternate templates provided in the file: prompt_templates.py: ( the user input can be couched in such a template to modify the output of the LLM )
+
+Look at the code in prompt_templates.py:
+
+```
+TEMPLATE_MAP = {
+    "base": template_base,
+    "music": template_music,
+    "gang": template_gang,
+    "poet": template_poet,
+    "rag": template_rag,
+    "sql": template_sql_tool
+}
+```
+
+# another use case that is becoming popular is the use of agentic AI where an LLM generates code dynamically (sometimes executing it as well)
+
+## Let's consider an example of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
+
+```
++-----+----------+----------+--------+----------+
+ID    | name     | species  | locale |    bd    |
++-----+----------+----------+--------+----------+
+as16e | Gloria   | gorilla  | india  | 19971106 |
+kj87g | Max      | tiger    | nepal  | 20100102 |
+sv278 | Bubbles  | elephant | kenya  | 20180617 |
++-----+----------+----------+--------+----------+ 
+```
+
+Imagine a table containing all the animals in a zoo with their names, species, original locale, age etc.
+
+Q: How can we dynamically query such a table based on a user's natural language question like this one:
+
+### "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
+
+You can solve for this by manipulating the prompt sent to an LLM so that it dynamically generates a SQL query capable of retrieving the answer from a traditional database.  (some function then, would execute the generated SQL query and either pass the results to the LLM for inclusion in a friendly response, or pass the results directly back to the calling program)
+
+We can limit the chance of costly queries if we construct a PreparedStatement and only ask the LLM to fill in the variables:
+
+```
+SELECT name, (EXTRACT(YEAR FROM AGE(current_date, bd))) as AGE FROM zoo.animals WHERE le = %S AND ss = %s LIMIT 1; 
+```
+
+* To demonstrate how an LLM might be able to parse natural language and assign variables as needed:
+
+Select the sql prompt template and ask the program the following: 
+(this assumes that there is only one logical path forward [hard-coded prompt includes the PreparedStatement] or you can look up the PreparedStatement effectively based on the context from the user prompt and the overarching purpose of the bot session in question)
+
+```
+"I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
+```
+
+## While the prepared statement is currently hard-coded in the prompt template, you should be able to understand how the full prompt could be dynamically constructed at runtime using a combination of RAG and possibly some routing/filtering based on environment or user-specific data
+
+
+6. When you are done using this environment you can deactivate it:
+
+```
+deactivate
+```
 
 
 ## The below is information on the clunky CLI version which requires restarts to enable changes to the prompt and storage options:
@@ -284,21 +342,6 @@ tell me about Spencer
 and recieve a strange response!
 
 
-## You can try your hand at more prompt engineering by playing with the alternate templates provided in the file: prompt_templates.py: ( the user input can be couched in such a template to modify the output of the LLM )
-
-Look at the code in prompt_templates.py:
-
-```
-TEMPLATE_MAP = {
-    "base": template_base,
-    "music": template_music,
-    "gang": template_gang,
-    "poet": template_poet,
-    "rag": template_rag,
-    "sql": template_sql_tool
-}
-```
-
 ## to test rag from the command line, start the program with the 'rag' argument:
 
 ```
@@ -318,58 +361,6 @@ what database did shipt use before they switched to cockroachDB?
 ```
 
 ## if the augmentation data is loaded, you should get a rich reply that hones in on the provided data
-
-
-# another use case that is becoming popular is the use of agentic AI where an LLM generates code dynamically (sometimes executing it as well)
-## Let's consider an example of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
-
-```
-+-----+----------+----------+--------+----------+
-ID    | name     | species  | locale |    bd    |
-+-----+----------+----------+--------+----------+
-as16e | Gloria   | gorilla  | india  | 19971106 |
-kj87g | Max      | tiger    | nepal  | 20100102 |
-sv278 | Bubbles  | elephant | kenya  | 20180617 |
-+-----+----------+----------+--------+----------+ 
-```
-
-Imagine a table containing all the animals in a zoo with their names, species, original locale, age etc.
-
-Q: How can we dynamically query such a table based on a user's natural language question like this one:
-
-### "I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
-
-You can solve for this by manipulating the prompt sent to an LLM so that it dynamically generates a SQL query capable of retrieving the answer from a traditional database.  (some function then, would execute the generated SQL query and either pass the results to the LLM for inclusion in a friendly response, or pass the results directly back to the calling program)
-
-We can limit the chance of costly queries if we construct a PreparedStatement and only ask the LLM to fill in the variables:
-
-```
-SELECT NICKNAME, (EXTRACT(YEAR FROM AGE(current_date, bd))) as AGE FROM zoo.animals WHERE le = %S AND ss = %s LIMIT 1; 
-```
-
-* To demonstrate how an LLM might be able to parse natural language and assign variables as needed:
-
-First - start the program using the sql prompt template:
-
-```
-python3 simpleLLM_with_cache.py 6 nostore sql
-```
-
-Next - ask the program the following: (this assumes that there is only one logical path forward or you can look up the PreparedStatement effectively based on the context from the user prompt and the overarching purpose of the bot session in question)
-
-```
-"I remember an older gorilla - maybe 25 or so years old and he came from India. What was his name?"
-```
-
-## While the prepared statement is currently hard-coded in the prompt template, you should be able to understand how the full prompt could be dynamically constructed at runtime using a combination of RAG and prompt engineering and possibly some routing/filtering based on environment or user-specific data
-
-
-6. When you are done using this environment you can deactivate it:
-
-```
-deactivate
-```
-
 
 
 
