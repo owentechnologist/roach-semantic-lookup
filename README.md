@@ -72,7 +72,7 @@ WITH target_vector AS (
     llm_response,
     star_rating,
     ROUND(
-        GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
+        GREATEST(0, LEAST(1, 1 - (prompt_embedding <=> ipv))) * 100,
         2
     ) AS "Percent Match"
     FROM llm_history, target_vector
