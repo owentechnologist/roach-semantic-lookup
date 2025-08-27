@@ -1,4 +1,6 @@
 demo.md
+parent_child_schema_notes.txt
+ragdata2.json
 roachsc/**
 .env
 __pycache__/
