@@ -154,15 +154,16 @@ def insert_llm_prompt_response(prompt_embedding,prompt_text,llm_response_text,pr
         print(f"❌ Error during SQL INSERT processing: {e}")
     return new_pk
 
-# the query filters results using both the user-assigned star_rating_filter and 
+# the query checks for stored/prior request|response pairs
+# it filters results using both the user-assigned star_rating_filter and 
 # the semantic similarity of the prompt to prior stored prompts
 # they must be threshold% semantically similar to be returned
 def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prompt_template):
     print(f"query_using_vector_similarity - using {prompt_template}")
     pk = None
-    threshold = 80
+    threshold = 65
     cached_response = ""
-    similarity_percent=80
+    similarity_percent=0
     
     oldQuery=f'''WITH target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv

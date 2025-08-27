@@ -17,7 +17,7 @@ def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
     classification_description='public' #ALERT! hard coded, naive example
     pk = None
     val = "Suggest a web search to get the missing information' <h2><em>..."
-    threshold = 40.0
+    threshold = 35.0
     oldquery=f'''WITH 
     target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv

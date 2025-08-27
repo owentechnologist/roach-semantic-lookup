@@ -12,7 +12,7 @@ You can look at some sequence diagrams and see some screenshots etc here:
 ![more info](./patterns_sequences.md)
 
 
-To run the example, which utilizes CRDB Vector Similarity Search Queries, you will need a connection to a Large Language Model (LLM) and a connection to CRDB version 25.2.1 or higher. 
+To run the example, which utilizes CRDB Vector Similarity Search Queries, you will need a connection to a Large Language Model (LLM) and a connection to CRDB version 25.3 or higher. 
 
 ## install and Initialize a cockroach database to act as a vectorDB:
 
@@ -62,7 +62,8 @@ cockroach sql --insecure -f crdb_setup.sql
 -- cosine_distance(vec1,vec2)
 ```
 
-## the essential query we will use to check for a semantic match to an incoming prompt will be:
+## Note that with cosine comparisons we are more generaous with the percentage match than with euclidean.
+## For retrieving cached responses we can target 65% similar prompts (test your own data and embeddings etc for the threshold that works for you) The essential query we will use to check for a semantic match to an incoming prompt will be:
 
 ```
 WITH target_vector AS (
@@ -78,7 +79,7 @@ WITH target_vector AS (
     FROM llm_history, target_vector
     WHERE star_rating >= %s
     AND prompt_template = %s
-    AND GREATEST(0, LEAST(1, 1 - (prompt_embedding <=> ipv))) * 100 > 82
+    AND GREATEST(0, LEAST(1, 1 - (prompt_embedding <=> ipv))) * 100 > 65
     ORDER BY "Percent Match" DESC
     LIMIT 2;
 ```
@@ -180,7 +181,11 @@ python3 bottlewebinterface.py
 
 # play with different prompt templates by selecting them in the first field then watch for the different responses generated
 
-try asking:  "Tell me about hotdogs"  using different prompt templates
+Try asking:  "Tell me about hotdogs"  using the base template
+
+If you save the result, you can then try again using the same template and this query: "Why would I want to eat a hotdog?"
+
+## You can also select RAG (Retrieval Augmented Generative AI) as an option 
 
 ### (this behaves in a more dynamic but similar fashion to the basic prompt engineering caused by selecting poet or gang or music, etc) to make this possible you must first load searchable embeddings and text into the database. <em>This can be accomplished using the command line program 'load_rag_data.py' </em> 
 
