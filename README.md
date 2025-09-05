@@ -6,13 +6,22 @@ This example calls an LLM, stores the LLM response as text, along with both a ve
 
 The example showcases searching for a prompt using Vector Search in order to avoid repeated calls to the LLM.  The example also offers a simple way to adjust the prompt sent to the llm which showcases variety in LLM behavior ranging from a helpful FAQ to a SQL customizer, capable of populating preparedStatements with relevant arguments. 
 
-## This project Uses https://localai.io/ and CockroachDB to demonstrate patterns commonly used with generative AI -specifically with a LLM.
-
-You can look at some sequence diagrams and see some screenshots etc here: 
+See the following page for some sequence diagrams and some screenshots of the app behavior here: 
 ![more info](./patterns_sequences.md)
 
 
+
+
 To run the example, which utilizes CRDB Vector Similarity Search Queries, you will need a connection to a Large Language Model (LLM) and a connection to CRDB version 25.3 or higher. 
+
+## This project Uses https://localai.io/ and CockroachDB to demonstrate patterns commonly used with generative AI -specifically with a LLM.
+
+## I choose to run localAI in podman on my laptop and I use these commands (once podman is installed)  You can of course run localAI in docker as well if you prefer:
+'''
+podman machine start
+podman run -ti --name local-ai -p 6060:8080 localai/localai:latest
+'''
+
 
 ## install and Initialize a cockroach database to act as a vectorDB:
 
