@@ -25,6 +25,7 @@ podman machine start
 podman run -ti --name local-ai -p 6060:8080 localai/localai:latest
 ```
 
+Once the localAI container is running connect to it in a browser at (http://localhost:6060/browse/) and load the model you wish to use.  The hard-coded one for this example is tinyswallow-1.5b-instruct , so enter that into the search bar and load it into your instance to continue running this program 'as is'. 
 
 ## install and Initialize a cockroach database to act as a vectorDB:
 
