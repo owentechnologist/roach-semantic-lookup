@@ -78,6 +78,8 @@ A simple example of RAG Retrieval Augmented Generative AI is also part of this p
 
 The 'sql' template points us towards another use case that is becoming popular: the use of agentic AI where an LLM generates code dynamically (sometimes executing it as well). <em>NB: As of 2025-08-08 the SQL is generated and revealed as a response, but not executed.</em>
 
+![agentic_sql](./resources/mermaid_agentic_sql.png)
+
 Let's consider an example of how an LLM might become part of a tool-use chain and fill in necessary blanks to dynamically interact with DB etc:
 
 ```

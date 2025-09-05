@@ -1,0 +1,9 @@
+sequenceDiagram
+    User->>+App: [Query] What is the average price of a bushel of plums?
+    App->>+DB: Vector Search for related enrichment information (SQL PreparedStatement) (RAG)
+    DB-->>-App: Respond with XTRA data (text chunk) to guide LLM Agent and focus output 
+    App->>+LLM: [Query] given this prepared statement provide SQL query to resolve the question in given prompt
+    App-->+SQLExecutor: (after validating SQL is safe and correct) Execute SQL and gather results
+    App-->LLM: [Query] Given these results answer this prompt 'What is the average price of a bushel of plums?'
+    LLM-->>-App: [text response statng avg weight is 65.5 US Dollars with proprietary results gathered from SQL results]
+    App-->>-User: [text response] (NB: NO CACHING IN THIS EXAMPLE AS PRICES CHANGE RAPIDLY)
