@@ -6,6 +6,8 @@ This example calls an LLM, stores the LLM response as text, along with both a ve
 
 The example showcases searching for a prompt using Vector Search in order to avoid repeated calls to the LLM.  The example also offers a simple way to adjust the prompt sent to the llm which showcases variety in LLM behavior ranging from a helpful FAQ to a SQL customizer, capable of populating preparedStatements with relevant arguments. 
 
+This example also includes the option to utilize the Retrieval Augmented Generative AI or RAG pattern.  (you need to deliberately load some data using load_rag_data.py before this will work and then select the 'rag' option from the drop down of available templates)
+
 See the following page for some sequence diagrams and some screenshots of the app behavior here: 
 ![more info](./patterns_sequences.md)
 
