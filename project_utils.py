@@ -118,11 +118,11 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prom
     FROM llm_history, target_vector, visibility
     WHERE star_rating >= %s
     AND prompt_template = %s
-    AND VB_PK = visibility_classification_id
     AND ROUND(
         GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
         2
     ) > %s
+    AND VB_PK = visibility_classification_id
     ORDER BY "Percent Match" DESC
     LIMIT 2;'''
     # oldQuery above uses function call: cosine_distance 
@@ -142,8 +142,8 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prom
     FROM llm_history, target_vector,visibility
     WHERE star_rating >= %s
     AND prompt_template = %s
-    AND VB_PK = visibility_classification_id
     AND GREATEST(0, LEAST(1, 1 - (prompt_embedding <=> ipv))) * 100 > %s
+    AND VB_PK = visibility_classification_id
     ORDER BY "Percent Match" DESC
     LIMIT 2;'''
     
