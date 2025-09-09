@@ -2,6 +2,10 @@
 import json
 from project_utils import *
 
+## TO DELETE OLD ENRICHMENT DATA AND LOAD ONLY WHAT's IN THE ragdata.json file:
+## Use an additional argument when launching this ... example:
+## python3 load_rag_data.py T
+
 # here we create the embeddings and load the data from the json file into the database: 
 def insert_text_chunk(text_embedding,subject_matter,similarity_text,text_chunk):
     if isinstance(subject_matter, list):
@@ -71,8 +75,25 @@ def load_augmentation_text():
         insert_text_chunk(subject_matter=subject_matters[i],similarity_text=similarity_text,text_chunk=llm_info_text,text_embedding=search_embedding)
     return 
 
+def delete_rag_data():
+    print('DELETING EXISTING RAG ENRICHMENT DATA...')
+    query = f'''DELETE FROM vdb.llm_enrichment 
+        WHERE 1=1;'''
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(query)
+    except Exception as e:
+        print(f"❌ DB Error during DELETE llm_enrichment: {e}")
+
 # --- Example usage ---
 if __name__ == "__main__":
+    if(len(sys.argv)>1):
+        #An empty string ("") evaluates to False
+        # any other value evaluates to True
+        delete_old=bool(sys.argv[1])
+        if delete_old==True:
+            delete_rag_data()
     print("\nLOADING RAG DATA FROM ragdata.json into the vdb.llm_enrichment table...")
     load_augmentation_text()
     print("\nDONE!")

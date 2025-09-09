@@ -71,13 +71,15 @@ def update_star_rating(new_rating,pk):
 
         
 def insert_llm_prompt_response(prompt_embedding,prompt_text,llm_response_text,prompt_template):
+    print('Hi from insert_llm_prompt_response...')
     if isinstance(prompt_text, list):
         prompt_text = ' '.join(str(x) for x in prompt_text)
     llm_response_text = llm_response_text.strip()
     new_pk=None
-    query = f'''INSERT INTO vdb.llm_history 
-        (prompt_embedding, prompt_text, llm_response, star_rating, prompt_template)
-        VALUES ('{prompt_embedding}', %s, %s, 3, %s) returning pk;'''
+    query = f''' 
+    INSERT INTO vdb.llm_history 
+        (prompt_embedding,visibility_classification_id, prompt_text, llm_response, star_rating, prompt_template)
+        VALUES ('{prompt_embedding}', (SELECT pk FROM vdb.visibility_classification WHERE classification_description = 'public'), %s, %s, 3, %s) returning pk;'''
     args = (prompt_text, llm_response_text, prompt_template)
     try:
         with get_connection() as conn:
@@ -86,6 +88,7 @@ def insert_llm_prompt_response(prompt_embedding,prompt_text,llm_response_text,pr
                 new_pk = cur.fetchone()[0] 
     except Exception as e:
         print(f"❌ Error during SQL INSERT processing: {e}")
+    print(f'new pk for inserted row in llm_history is {new_pk}')
     return new_pk
 
 # the query checks for stored/prior request|response pairs
@@ -102,6 +105,9 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prom
     oldQuery=f'''WITH target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv
     )
+    WITH visibility AS 
+    (SELECT pk AS VB_PK FROM visibility_classification 
+    WHERE classification_description = 'public')
     SELECT pk,
     llm_response,
     star_rating,
@@ -109,9 +115,10 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prom
         GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
         2
     ) AS "Percent Match"
-    FROM llm_history, target_vector
+    FROM llm_history, target_vector, visibility
     WHERE star_rating >= %s
     AND prompt_template = %s
+    AND VB_PK = visibility_classification_id
     AND ROUND(
         GREATEST(0, LEAST(1, 1 - cosine_distance(prompt_embedding, ipv))) * 100,
         2
@@ -122,7 +129,9 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prom
     # query below uses cosine distance operator <=> (only available CRDB >= 25.3)
     query=f'''WITH target_vector AS (
         SELECT '{incoming_prompt_vector}'::vector AS ipv
-    )
+    ),
+    visibility AS (SELECT pk AS VB_PK FROM visibility_classification 
+    WHERE classification_description = 'public')
     SELECT pk,
     llm_response,
     star_rating,
@@ -130,9 +139,10 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prom
         GREATEST(0, LEAST(1, 1 - (prompt_embedding <=> ipv))) * 100,
         2
     ) AS "Percent Match"
-    FROM llm_history, target_vector
+    FROM llm_history, target_vector,visibility
     WHERE star_rating >= %s
     AND prompt_template = %s
+    AND VB_PK = visibility_classification_id
     AND GREATEST(0, LEAST(1, 1 - (prompt_embedding <=> ipv))) * 100 > %s
     ORDER BY "Percent Match" DESC
     LIMIT 2;'''

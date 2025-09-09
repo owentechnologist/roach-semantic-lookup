@@ -13,25 +13,26 @@ drop table IF EXISTS vdb.llm_history;
 -- look at what tables exist in your database:
 SHOW tables;
 
+-- entering the world of dynamic augmentation: guardrails and permissioning:
+CREATE TABLE IF NOT EXISTS vdb.visibility_classification(
+   pk UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   classification_description string NOT NULL CHECK (classification_description IN ('internal_exec','internal_mngmnt','internal_general','private_session','public')),
+   classification_int_value smallint NOT NULL CHECK (classification_int_value BETWEEN 0 AND 4)
+);
+
 -- create the llm_history table:  (this is a quick 'cache' example)
--- NOT_IMPLEMENTED: (limiting the cached results to certain users/sessions)
+-- visibility_classification_id: (limiting the cached results to certain users/sessions)
 -- note the use of the vector prompt_embedding
 -- note the use of star_rating to encourage limiting results to only desired ratings
 CREATE TABLE IF NOT EXISTS vdb.llm_history(
    pk UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   visibility_classification_id UUID NOT NULL REFERENCES vdb.visibility_classification(pk),
    prompt_embedding VECTOR(768),
    prompt_text string,
    llm_response string,
    prompt_template string NOT NULL DEFAULT 'template_base' CHECK (prompt_template IN ('template_base','template_music','template_gang','template_poet','template_rag','template_sql_tool')),
    star_rating smallint NOT NULL DEFAULT 3 CHECK (star_rating BETWEEN 1 AND 5),
    VECTOR INDEX (star_rating,prompt_template,prompt_embedding vector_cosine_ops) -- non-default cosine nearest neighbor support (default is L2 for KNN)
-);
-
--- entering the world of dynamic augmentation: guardrails and permissioning:
-CREATE TABLE IF NOT EXISTS vdb.visibility_classification(
-   pk UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-   classification_description string NOT NULL CHECK (classification_description IN ('internal_exec','internal_mngmnt','internal_general','private_session','public')),
-   classification_int_value smallint NOT NULL CHECK (classification_int_value BETWEEN 0 AND 4)
 );
 
 -- metadata table that points to related data when desired/required
