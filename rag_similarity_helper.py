@@ -36,7 +36,7 @@ def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
     AND (le.subject_matter = %s OR le.subject_matter like %s)
     AND (GREATEST(0, LEAST(1, 1 - cosine_distance(le.chunk_embedding, ipv))) * 100) > %s
     ORDER BY "Percent Match" DESC
-    LIMIT 2;'''
+    LIMIT 1;'''
     # oldQuery above uses function call cosine_distance 
     # query below uses cosine distance operator <=> (only available CRDB >= 25.3)
     query=f'''WITH 
@@ -57,7 +57,7 @@ def rag_query_using_vector_similarity(subject_matter, incoming_prompt_vector):
     AND (le.subject_matter = %s OR le.subject_matter like %s)
     AND (GREATEST(0, LEAST(1, 1 - (le.chunk_embedding <=> ipv))) * 100) > %s
     ORDER BY "Percent Match" DESC
-    LIMIT 2;'''
+    LIMIT 1;'''
 
     args = (classification_description,subject_matter,'public%',threshold,)
     print(f'\n***DEBUG***\ncalling DB and filtering on: {classification_description}, {subject_matter}, {threshold}% similarity \n')

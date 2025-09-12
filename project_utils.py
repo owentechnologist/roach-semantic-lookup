@@ -124,7 +124,7 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prom
     ) > %s
     AND VB_PK = visibility_classification_id
     ORDER BY "Percent Match" DESC
-    LIMIT 2;'''
+    LIMIT 1;'''
     # oldQuery above uses function call: cosine_distance 
     # query below uses cosine distance operator <=> (only available CRDB >= 25.3)
     query=f'''WITH target_vector AS (
@@ -145,7 +145,7 @@ def query_using_vector_similarity(incoming_prompt_vector,star_rating_filter,prom
     AND GREATEST(0, LEAST(1, 1 - (prompt_embedding <=> ipv))) * 100 > %s
     AND VB_PK = visibility_classification_id
     ORDER BY "Percent Match" DESC
-    LIMIT 2;'''
+    LIMIT 1;'''
     
     args = (star_rating_filter,prompt_template,threshold,)
     try:
