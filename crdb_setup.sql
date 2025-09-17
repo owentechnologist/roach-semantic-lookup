@@ -9,6 +9,10 @@ USE vdb;
 
 -- dropping tables may be useful if you want to clean up:
 drop table IF EXISTS vdb.llm_history;
+drop table IF EXISTS vdb.llm_enrichment;
+drop table IF EXISTS vdb.related_content;
+drop table IF EXISTS vdb.visibility_classification;
+
 
 -- look at what tables exist in your database:
 SHOW tables;

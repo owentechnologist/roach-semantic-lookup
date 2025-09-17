@@ -77,14 +77,13 @@ def load_augmentation_text():
 
 def delete_rag_data():
     print('DELETING EXISTING RAG ENRICHMENT DATA...')
-    query = f'''DELETE FROM vdb.llm_enrichment 
-        WHERE 1=1;'''
+    query = f'''TRUNCATE vdb.llm_enrichment;'''
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(query)
     except Exception as e:
-        print(f"❌ DB Error during DELETE llm_enrichment: {e}")
+        print(f"❌ DB Error during TRUNCATE llm_enrichment: {e}")
 
 # --- Example usage ---
 if __name__ == "__main__":
