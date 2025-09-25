@@ -125,6 +125,20 @@ We can change the cached response to be more to our liking:
 UPDATE llm_history SET llm_response='Toothpaste helps clean teeth and polish silver jewellry.' where prompt_text='what is toothpaste good for?';
 ```
 
+# where data visibility is a concern, you can adjust the subject_matter to make the enrichment data visible or adjust the subject_matter to hide the data
+
+Example: after loading the rag enrichment data, one of the entries is hidden.  
+
+```
+update llm_enrichment set subject_matter='public' where subject_matter='internal_general';
+```
+
+The following rag query should now produce informed results:
+
+* how do I ensure a cut-free image when using the 6xx XR Security X-ray System?
+
+
+
 ## Python-preparation Steps for running the project on your dev machine:
 
 
