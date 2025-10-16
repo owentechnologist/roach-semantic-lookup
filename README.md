@@ -191,6 +191,12 @@ pip3 install -r requirements.txt
 
 Edit your local copy of the code in connection_stuff.py as you prefer/need for the connection settings.  
 
+If you are using a secure database, you can edit the contents of the db_config_secure dictionary to map to your repository for your certificates.  You will also need to set the env variable SECURE_CRDB=true  
+
+```
+export SECURE_CRDB=true
+``` 
+
 # A simple web interface is available for use and is started using:
 
 ```
