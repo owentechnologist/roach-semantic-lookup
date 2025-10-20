@@ -197,6 +197,12 @@ If you are using a secure database, you can edit the contents of the db_config_s
 export SECURE_CRDB=true
 ``` 
 
+## if running the sql client that comes with CRDB in secure mode you would need to be certain to have the necessary certificates stored in a reachable folder and include them in your startup command for the client like this:
+
+```
+cockroach sql --certs-dir=/Users/owentaylor/.cockroach-certs --host=localhost --port=26257
+```
+
 # A simple web interface is available for use and is started using:
 
 ```
