@@ -12,8 +12,6 @@ See the following page for some sequence diagrams and some screenshots of the ap
 ![more info](./patterns_sequences.md)
 
 
-
-
 To run the example, which utilizes CRDB Vector Similarity Search Queries, you will need a connection to a Large Language Model (LLM) and a connection to CRDB version 25.3 or higher. 
 
 ## This project Uses https://localai.io/ and CockroachDB to demonstrate patterns commonly used with generative AI -specifically with a LLM.
@@ -69,13 +67,21 @@ to execute all the SQL commands needed plus some test queries from the root of t
 cockroach sql --insecure -f crdb_setup.sql
 ```
 
-## thoughts on calculating vector distances in CRDB: For Semantic Search against text embeddings we use the function: cosine_distance(vec1,vec2)
+## thoughts on calculating vector distances in CRDB: For Semantic Search against text embeddings you have the choice to use the function: cosine_distance(vec1,vec2)  
 ```
 -- filter on percentage match option: 
 -- cosine_distance(vec1,vec2)
 ```
 
-## Note that with cosine comparisons we are more generaous with the percentage match than with euclidean.
+## You can also choose to use the following syntax when using Vector indexes:
+
+```
+<=>
+```
+
+### See this documentation on our vector indexing support:
+https://www.cockroachlabs.com/docs/v25.4/vector-indexes.html 
+
 ## For retrieving cached responses we can target 65% similar prompts (test your own data and embeddings etc for the threshold that works for you) The essential query we will use to check for a semantic match to an incoming prompt will be:
 
 ```
@@ -97,29 +103,29 @@ WITH target_vector AS (
     LIMIT 2;
 ```
 
-If you wish to execute other sql -- The following command connects using the provided SQL CLI:
+## If you wish to execute other sql -- The following command connects using the provided SQL CLI:
 
 ```
 cockroach sql --insecure
 ```
 
-Switch to the database of interest:
+## Switch to the database of interest:
 
 ```
 use vdb;
 ```
 
-A sample query you may want to try after some prompts and responses have been collected.
+## A sample query you may want to try after some prompts and responses have been collected.
 
 ```
 select prompt_text,star_rating,prompt_template from llm_history order by star_rating asc;
 ```
 
-Or, perhaps you would like to curate and modify a generated response.
+## Or, perhaps you would like to curate and modify a generated response.
 
-Assuming someone prompted the program with this text: 'what is toothpaste good for?'
+### Assuming someone prompted the program with this text: 'what is toothpaste good for?'
 
-We can change the cached response to be more to our liking:
+### We can change the cached response to be more to our liking:
 
 ```
 UPDATE llm_history SET llm_response='Toothpaste helps clean teeth and polish silver jewellry.' where prompt_text='what is toothpaste good for?';
@@ -127,13 +133,13 @@ UPDATE llm_history SET llm_response='Toothpaste helps clean teeth and polish sil
 
 # where data visibility is a concern, you can adjust the subject_matter to make the enrichment data visible or adjust the subject_matter to hide the data
 
-Example: after loading the rag enrichment data, one of the entries is hidden.  
+### Example: after loading the rag enrichment data, one of the entries is hidden.  
 
 ```
 update llm_enrichment set subject_matter='public' where subject_matter='internal_general';
 ```
 
-The following rag query should now produce informed results:
+### The following rag query should now produce informed results:
 
 * how do I ensure a cut-free image when using the 6xx XR Security X-ray System?
 
@@ -222,7 +228,7 @@ python3 bottlewebinterface.py
 
 Try asking:  "Tell me about hotdogs"  using the base template
 
-If you save the result, you can then try again using the same template and this query: "Why would I want to eat a hotdog?"
+If you save the result, you can then try again using the same template and this query: "Why would I want to eat a hotdog?"  The two prompts about hotdogs are similar enough that you should see the cached response from the first prompt be returned as a response to the second prompt.  Note the speed of retrieval and time spent interacting with the DB and the LLM. 
 
 ## You can also select RAG (Retrieval Augmented Generative AI) as an option 
 
@@ -243,17 +249,19 @@ python3 load_rag_data.py
 # note that the rag option will specifically allow for retrieving context and information dynamically (You can edit the ragdata.json file to add additional data)
 
 >[!NOTE] 
-> If you haven't already: try asking:  " who is Spencer? "  using rag
-> Then Save the response (assuming it seems useful)
+> If you haven't already: try asking:  " who is Spencer? "  using the rag drop down option 
+> Then deliberately Save the response by clicking the radio button labelled True and giving the response a rating of 3 or higher stars  (hopefully, the response from the LLM is useful enough to warrant caching)
 <hr>
 
-* You could then provide a prompt like:  
+* You could then again choose the rag drop down and provide a prompt like:  
 
 ```
 tell me about Spencer
 ```
 
-* or you could test different rag-enriched subjects:
+Which will be similar enough to result in the cached response being returned.
+
+* or you could test different rag-enriched subjects with prompts like the following when choosing the rag drop down option:
 
 ```
 What database did Shipt use before they switched to cockroachDB?
@@ -335,76 +343,3 @@ Select the sql prompt template and ask the program the following:
 ```
 deactivate
 ```
-
-
-## The below is information on the clunky CLI version which requires restarts to enable changes to the prompt and storage options:
-
-To use the default star_rating filter of 3 or better stars just call the program:
-
-```
-python3 simpleLLM_with_cache.py 
-```
-
-* The example will call an LLM and display the response, as well as display the prompt sent to the LLM 
-
-* The program will use semantic caching and the incoming prompts will be stored in CRDB in their embedded form so that Vector Search can find them - Note however that all queries filter according to the star_rating of the responses
-
-* NB: If a stored response to a query does not have a star_rating high enough to pass the star_rating filter, a new prompt and response will be stored alongside the old one (currently, all responses are given a star_rating of 3 as a default when they are initially stored)
-
-* Prompt engineering options: (note if you fetch a CRDB stored result, the LLM never gets called, and the prompt engineering has no effect)
-You may wish to force-fail the matching query by demanding a higher star_rating.  
-You can do this by calling the program with a higher number than is possible (the table has a constraint allowing only values between 1 and 5): 
-
-```
-python3 simpleLLM_with_cache.py 6 
-```
-
-* If you wish to disable the writing of new prompts and responses to the database you can add one more argument when starting up the program:
-
-```
-python3 simpleLLM_with_cache.py 6 nostore
-```
-
-# prompt engineering and context management:
-
-## You may also adjust the prompts used in simpleLLM_with_cache.py and prompt_templates.py to adjust the behavior of the LLM 
-
-The existing logic insists on the ordering of args to the program and when you specify a prompt to modify the flavour of the LLM response, that response will not be persisted to the database.  (fork the project and change it if you wish other behavior) 
-
-If you wish to specify a non-default prompt to the LLM, start the program; adding as an argument the keyname of the prompt template you wish to send to the LLM with each request like so:
-
-```
-python3 simpleLLM_with_cache.py 6 nostore poet
-```
-
-* You could then provide a prompt like:  
-
-```
-tell me about Spencer
-```
-
-and recieve a strange response!
-
-
-## to test rag from the command line, start the program with the 'rag' argument:
-
-```
-python3 simpleLLM_with_cache.py 6 nostore rag
-```
-
-* You could then provide a prompt like:  
-
-```
-tell me about Spencer
-```
-
-* or:
-
-```
-what database did shipt use before they switched to cockroachDB?
-```
-
-## if the augmentation data is loaded, you should get a rich reply that hones in on the provided data
-
-
-
