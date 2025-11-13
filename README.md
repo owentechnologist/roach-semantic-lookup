@@ -79,6 +79,13 @@ cockroach sql --insecure -f crdb_setup.sql
 <=>
 ```
 
+Where the result is a number revealing how close to zero difference exists between the stored vectors in the interesting table and the vectorized incoming prompt:
+
+```
+existing_prompt_embedding <=> incoming_prompt_embedding
+```
+
+
 ### See this documentation on our vector indexing support:
 https://www.cockroachlabs.com/docs/v25.4/vector-indexes.html 
 
